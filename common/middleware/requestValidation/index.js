@@ -4,7 +4,7 @@ const { BAD_REQUEST } = StatusCodes;
 
 const validateRequest = (schema) => {
   const joiValidationOptions = {
-    abortEarly: true,
+    abortEarly: false,
     allowUnknown: true,
   };
 
@@ -22,7 +22,17 @@ const validateRequest = (schema) => {
       }
       next();
     } catch (error) {
-      res.status(BAD_REQUEST).send(error.details[0].message);
+      const errors =
+        error.details?.map((detail) => ({
+          field: detail.path.join("."),
+          message: detail.message.replace(/['"]/g, ""),
+        })) || [];
+
+      res.status(BAD_REQUEST).json({
+        success: false,
+        message: "Validation error",
+        errors,
+      });
     }
   };
 };

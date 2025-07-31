@@ -1,21 +1,21 @@
 import jwt from "jsonwebtoken";
 
-export const generateToken = async (user, expiresIn) => {
+// Generates access token
+export const generateToken = async (user, expiresIn = "7d") => {
   const JWT_SECRET = process.env.JWT_SECRET || "secret";
-  const JWT_EXPIRES_IN = expiresIn;
-  if (!user) return null;
 
+  if (!user) return null;
   if (user.password) delete user.password;
 
   return jwt.sign({ userId: user._id }, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
+    expiresIn,
   });
 };
 
-export const generatePasswordResetToken = async (email) => {
+export const generatePasswordResetToken = async (email, expiresIn = "15m") => {
   const JWT_SECRET = process.env.JWT_SECRET || "secret";
-  const JWT_EXPIRES_IN = "15m";
+
   if (!email) return null;
 
-  return jwt.sign({ email }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  return jwt.sign({ email }, JWT_SECRET, { expiresIn });
 };

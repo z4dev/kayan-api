@@ -2,8 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import jwt from "jsonwebtoken";
 import _ from "lodash";
 import { JWT_SECRET } from "../../../config/env/index.js";
-import userModel from "../../../server/users/models/index.js";
-import { errorCodes, USER_ROLES } from "../../helpers/constants.js";
+import { errorCodes, USER_ROLES } from "../../helpers/constant.js";
 import { isValidRole } from "../../helpers/isValid.js";
 import logger from "../../utils/logger/index.js";
 
@@ -35,15 +34,6 @@ const Authenticate = async (req, res, next) => {
     const userId = _.get(decoded, "userId", null);
 
     if (!userId)
-      return res.status(StatusCodes.FORBIDDEN).json({
-        message: errorCodes.INVALID_TOKEN.message,
-        statusCode: StatusCodes.FORBIDDEN,
-        error: errorCodes.INVALID_TOKEN.code,
-      });
-
-    // get user details from user service
-    const user = await userModel.findOneAndIncludeOTP({ _id: userId });
-    if (!user || !user.isActive)
       return res.status(StatusCodes.FORBIDDEN).json({
         message: errorCodes.INVALID_TOKEN.message,
         statusCode: StatusCodes.FORBIDDEN,
