@@ -4,7 +4,7 @@ import { USER_ROLES } from "../../../common/helpers/constant.js";
 import ErrorResponse from "../../../common/utils/errorResponse/index.js";
 import { generateToken } from "../../../common/utils/jwt/index.js";
 import { usersErrors } from "../helpers/constant.js";
-import User from "../schema/index.js";
+import User from "../model/index.js";
 
 const { BAD_REQUEST, UNAUTHORIZED } = StatusCodes;
 
@@ -12,12 +12,20 @@ class UsersService {
   async login(body) {
     const { email, password } = body;
 
-    const user = await User.findOne({ email }).select("+password");
+    const user = await User.findOne({ email });
     if (!user) {
       throw new ErrorResponse(
         usersErrors.INVALID_CREDENTIALS.message,
         UNAUTHORIZED,
         usersErrors.INVALID_CREDENTIALS.code
+      );
+    }
+
+    if (!user.isVerified) {
+      throw new ErrorResponse(
+        usersErrors.PATIENT_NOT_FOUND.message,
+        UNAUTHORIZED,
+        usersErrors.PATIENT_NOT_FOUND.code
       );
     }
 
@@ -30,21 +38,13 @@ class UsersService {
       );
     }
 
-    const token = await generateToken(user.toObject());
-    const userObj = user.toObject();
-    delete userObj.password;
+    const token = await generateToken(user);
 
-    return { user: userObj, token };
+    return { user, token };
   }
 
-  /**
-   * Only registers patients.
-   */
   async registerPatient(data) {
     const { email, phoneNumber, password } = data;
-
-    console.log(email)
-    console.log(phoneNumber);
 
     const existing = await User.findOne({
       $or: [{ email }, { phoneNumber }],
@@ -57,8 +57,7 @@ class UsersService {
     const hashedPassword = await bcrypt.hash(password, 10);
     data.password = hashedPassword;
 
-    const createdUser =
-      await User.discriminators[USER_ROLES.PATIENT].create(data);
+    const createdUser = await User.createByRole(USER_ROLES.PATIENT, data);
 
     const userObj = createdUser.toObject();
     delete userObj.password;

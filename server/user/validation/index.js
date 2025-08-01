@@ -2,6 +2,7 @@ import Joi from "joi";
 import { CONTROLLERS, GENDERS } from "../helpers/constant.js";
 
 export default {
+    
   [CONTROLLERS.LIST_USERS]: {
     query: Joi.object({
       page: Joi.number().optional(),

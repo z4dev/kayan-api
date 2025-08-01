@@ -16,16 +16,17 @@ export const GENDERS = {
 
 export const usersErrors = Object.freeze({
   PATIENT_NOT_FOUND: {
-    code: "PATIENT_NOT_FOUND",
+    code: 101,
     message: "Patient not found",
   },
+
   DOCTOR_NOT_FOUND: {
-    code: "DOCTOR_NOT_FOUND",
+    code: 102,
     message: "Doctor not found",
   },
 
   INVALID_CREDENTIALS: {
-    code: "INVALID_CREDENTIALS",
+    code: 103,
     message: "Invalid email or password",
   },
 });

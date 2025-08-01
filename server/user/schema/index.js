@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { USER_ROLES } from "../../../common/helpers/constant.js";
-import {GENDERS} from "../helpers/constant.js";
 import nanoid from "../../../common/utils/nanoID/index.js";
+import { GENDERS } from "../helpers/constant.js";
 
 const options = { discriminatorKey: "userType", collection: "users" };
 

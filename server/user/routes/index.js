@@ -11,5 +11,10 @@ router.post(
   validateRequest(validationSchemas[CONTROLLERS.REGISTER_PATIENT]),
   Controller[CONTROLLERS.REGISTER_PATIENT]
 );
+router.post(
+  "/login",
+  validateRequest(validationSchemas[CONTROLLERS.LOGIN]),
+  Controller[CONTROLLERS.LOGIN]
+);
 
 export default router;
