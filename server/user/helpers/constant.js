@@ -1,14 +1,16 @@
 export const CONTROLLERS = {
   LOGIN: "login",
+
   REGISTER_PATIENT: "RegisterPatient",
   REGISTER_DOCTOR: "RegisterDoctor",
   REGISTER_FINANCE: "RegisterFinance",
-  LIST_USERS: "listUsers",
-  GET_USER: "getUser",
+
   LIST_DOCTORS: "listDoctors",
   LIST_PATIENTS: "listPatients",
+
   GET_PROFILE: "getPatientProfile",
   UPDATE_PROFILE: "updatePatientProfile",
+  
   GET_DOCTOR: "getDoctor",
   GET_PATIENT: "getPatient",
 };

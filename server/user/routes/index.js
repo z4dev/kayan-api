@@ -47,4 +47,34 @@ router.put(
   Controller[CONTROLLERS.UPDATE_PROFILE]
 );
 
+router.get(
+  "/doctors",
+  Authenticate,
+  Authorization.Authorize(permission[CONTROLLERS.LIST_DOCTORS]),
+  validateRequest(validationSchemas[CONTROLLERS.LIST_DOCTORS]),
+  Controller[CONTROLLERS.LIST_DOCTORS]
+);
+router.get(
+  "/patients",
+  Authenticate,
+  Authorization.Authorize(permission[CONTROLLERS.LIST_PATIENTS]),
+  validateRequest(validationSchemas[CONTROLLERS.LIST_PATIENTS]),
+  Controller[CONTROLLERS.LIST_PATIENTS]
+);
+router.get(
+  "/doctors/:id",
+  Authenticate,
+  Authorization.Authorize(permission[CONTROLLERS.GET_DOCTOR]),
+  validateRequest(validationSchemas[CONTROLLERS.GET_DOCTOR]),
+  Controller[CONTROLLERS.GET_DOCTOR]
+);
+
+router.get(
+  "/patients/:id",
+  Authenticate,
+  Authorization.Authorize(permission[CONTROLLERS.GET_PATIENT]),
+  validateRequest(validationSchemas[CONTROLLERS.GET_PATIENT]),
+  Controller[CONTROLLERS.GET_PATIENT]
+);
+
 export default router;

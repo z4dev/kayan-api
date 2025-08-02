@@ -3,6 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import { USER_ROLES } from "../../../common/helpers/constant.js";
 import ErrorResponse from "../../../common/utils/errorResponse/index.js";
 import { generateToken } from "../../../common/utils/jwt/index.js";
+import { getPaginationAndSortingOptions } from "../../../common/utils/pagination/index.js";
 import { usersErrors } from "../helpers/constant.js";
 import User from "../model/index.js";
 
@@ -179,33 +180,61 @@ class UsersService {
     return updatedUser;
   }
 
-  async getUser(id) {
-    const user = await User.findById(id).select("-password");
-    if (!user) {
-      throw new ErrorResponse("User not found", BAD_REQUEST);
-    }
-    return user;
-  }
+  async listDoctors(query) {
+    const { page, limit, skip, sortBy, sortOrder, ..._query } = query;
 
-  async listUsers(query) {
-    return await User.find(query).select("-password");
-  }
+    const options = getPaginationAndSortingOptions(query);
 
-  async listDoctors() {
-    return await User.find({ userType: USER_ROLES.DOCTOR }).select("-password");
-  }
-
-  async listPatients() {
-    return await User.find({ userType: USER_ROLES.PATIENT }).select(
-      "-password"
+    const doctors = await User.find(
+      {
+        userType: USER_ROLES.DOCTOR,
+        ..._query,
+      },
+      options
     );
+    const count = await User.count({
+      userType: USER_ROLES.DOCTOR,
+      ..._query,
+    });
+
+    return {
+      doctors,
+      ...options,
+      count,
+    };
+  }
+
+  async listPatients(query) {
+    const { page, limit, skip, sortBy, sortOrder, ..._query } = query;
+
+    const options = getPaginationAndSortingOptions(query);
+
+    const patients = await User.find(
+      {
+        userType: USER_ROLES.PATIENT,
+        ..._query,
+      },
+
+      options
+    );
+
+    const count = await User.count({
+      userType: USER_ROLES.PATIENT,
+      ..._query,
+    });
+
+    return {
+      patients,
+      ...options,
+      count,
+    };
   }
 
   async getDoctor(id) {
-    const doctor = await User.findOne({
+    const doctor = await User.findOneWithoutPassword({
       _id: id,
       userType: USER_ROLES.DOCTOR,
-    }).select("-password");
+    });
     if (!doctor) {
       throw new ErrorResponse(
         usersErrors.DOCTOR_NOT_FOUND.message,
@@ -217,10 +246,10 @@ class UsersService {
   }
 
   async getPatient(id) {
-    const patient = await User.findOne({
+    const patient = await User.findOneWithoutPassword({
       _id: id,
       userType: USER_ROLES.PATIENT,
-    }).select("-password");
+    });
     if (!patient) {
       throw new ErrorResponse(
         usersErrors.PATIENT_NOT_FOUND.message,

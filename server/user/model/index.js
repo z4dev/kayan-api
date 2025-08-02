@@ -7,8 +7,8 @@ class UserModel {
 
   async find(selectors = {}, options = {}) {
     const { limit, skip, sort, projection } = options;
-
-    return await User.find(excludeDeleted(selectors))
+    console.log(limit, skip, sort);
+    return await User.find(selectors)
       .select(this._buildProjection(projection))
       .sort(sort || "-updatedAt")
       .limit(limit)
@@ -50,7 +50,6 @@ class UserModel {
       .select(this._buildProjection())
       .lean();
   }
-  
 
   async createByRole(userType, payload) {
     const discriminatorModel = User.discriminators?.[userType];
@@ -82,6 +81,11 @@ class UserModel {
 
     const { password, __v, ...clean } = user;
     return clean;
+  }
+
+  async count(selectors = {}) {
+    const result = await User.countDocuments(selectors).maxTimeMS(60000);
+    return result;
   }
 }
 

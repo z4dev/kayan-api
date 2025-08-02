@@ -88,7 +88,7 @@ export default {
 
   [CONTROLLERS.LIST_DOCTORS]: async (req, res, next) => {
     try {
-      const data = await usersService.listDoctors();
+      const data = await usersService.listDoctors(req.query);
       res.status(StatusCodes.OK).json({ success: true, data });
     } catch (error) {
       logger.error(error);
@@ -98,7 +98,7 @@ export default {
 
   [CONTROLLERS.LIST_PATIENTS]: async (req, res, next) => {
     try {
-      const data = await usersService.listPatients();
+      const data = await usersService.listPatients(req.query);
       res.status(StatusCodes.OK).json({ success: true, data });
     } catch (error) {
       logger.error(error);

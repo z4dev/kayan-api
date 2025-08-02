@@ -19,4 +19,9 @@ export default {
     USER_ROLES["FINANCE"],
     USER_ROLES["DOCTOR"],
   ],
+
+  [CONTROLLERS.GET_PATIENT]: [
+    USER_ROLES["DOCTOR"],
+    USER_ROLES["FINANCE"],
+  ],
 };
