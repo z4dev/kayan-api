@@ -119,6 +119,33 @@ class UsersService {
     return { user: userObj, token };
   }
 
+  async registerFinance(data) {
+    const { email, phoneNumber, password } = data;
+
+    const existing = await User.findOne({
+      $or: [{ email }, { phoneNumber }],
+    });
+
+    if (existing) {
+      throw new ErrorResponse(
+        usersErrors.EMAIL_OR_PHONE_EXISTS.message,
+        BAD_REQUEST,
+        usersErrors.EMAIL_OR_PHONE_EXISTS.code
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    data.password = hashedPassword;
+
+    const createdUser = await User.createByRole(USER_ROLES.FINANCE, data);
+
+    const userObj = createdUser.toObject();
+    delete userObj.password;
+
+    const token = await generateToken(userObj);
+    return { user: userObj, token };
+  }
+
   async getProfile(userId) {
     const user = await User.findOneWithoutPassword({ _id: userId });
 

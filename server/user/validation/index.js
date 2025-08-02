@@ -94,6 +94,11 @@ export default {
       ...doctorFields,
     }),
   },
+  [CONTROLLERS.REGISTER_FINANCE]: {
+    body: Joi.object({
+      ...baseUserFields,
+    }),
+  },
 
   [CONTROLLERS.GET_PROFILE]: {
     params: Joi.object().optional(),
