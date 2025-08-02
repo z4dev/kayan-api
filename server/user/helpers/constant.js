@@ -1,10 +1,14 @@
 export const CONTROLLERS = {
   LOGIN: "login",
   REGISTER_PATIENT: "RegisterPatient",
+  REGISTER_DOCTOR: "RegisterDoctor",
+  REGISTER_FINANCE: "RegisterFinance",
   LIST_USERS: "listUsers",
   GET_USER: "getUser",
   LIST_DOCTORS: "listDoctors",
   LIST_PATIENTS: "listPatients",
+  GET_PROFILE: "getPatientProfile",
+  UPDATE_PROFILE: "updatePatientProfile",
   GET_DOCTOR: "getDoctor",
   GET_PATIENT: "getPatient",
 };
@@ -13,6 +17,8 @@ export const GENDERS = {
   MALE: "MALE",
   FEMALE: "FEMALE",
 };
+
+export const NO_ADDRESS = "No Address Provided";
 
 export const usersErrors = Object.freeze({
   PATIENT_NOT_FOUND: {
@@ -36,5 +42,9 @@ export const usersErrors = Object.freeze({
   EMAIL_OR_PHONE_EXISTS: {
     code: 105,
     message: "Email or phone number already exists",
+  },
+  USER_NOT_FOUND: {
+    code: 106,
+    message: "User not found",
   },
 });

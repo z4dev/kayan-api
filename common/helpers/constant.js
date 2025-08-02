@@ -3,6 +3,10 @@ export const errorCodes = Object.freeze({
     message: "User not authorized",
     code: 1,
   },
+  INVALID_TOKEN: {
+    message: "Invalid token",
+    code: 2,
+  },
 });
 
 const PATIENT = "PATIENT";

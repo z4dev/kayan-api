@@ -7,10 +7,10 @@ export default class Authorization {
     return permissions.includes(userRole);
   }
 
-  static Authorize = (permissions, endpoint) => {
+  static Authorize = (permissions) => {
     return (req, res, next) => {
       const user = req.user;
-      const userRole = _.get(user, "role", null);
+      const userRole = _.get(user, "userType", null);
 
       if (!user || !userRole)
         return res.status(StatusCodes.FORBIDDEN).json({

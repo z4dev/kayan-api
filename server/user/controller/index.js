@@ -1,4 +1,5 @@
 import { StatusCodes } from "http-status-codes";
+import _ from "lodash";
 import logger from "../../../common/utils/logger/index.js";
 import { CONTROLLERS } from "../helpers/constant.js";
 import usersService from "../service/usersService.js";
@@ -24,6 +25,47 @@ export default {
     }
   },
 
+  [CONTROLLERS.REGISTER_DOCTOR]: async (req, res, next) => {
+    try {
+      const data = await usersService.registerDoctor(req.body);
+      res.status(StatusCodes.CREATED).json({ success: true, data });
+    } catch (error) {
+      logger.error(error);
+      next(error);
+    }
+  },
+
+  [CONTROLLERS.REGISTER_FINANCE]: async (req, res, next) => {
+    try {
+      const data = await usersService.registerFinance(req.body);
+      res.status(StatusCodes.CREATED).json({ success: true, data });
+    } catch (error) {
+      logger.error(error);
+      next(error);
+    }
+  },
+  [CONTROLLERS.GET_PROFILE]: async (req, res, next) => {
+    try {
+      const userId = _.get(req, "user._id", null);
+      console.log(userId);
+      const data = await usersService.getProfile(userId);
+      res.status(StatusCodes.OK).json({ success: true, data });
+    } catch (error) {
+      logger.error(error);
+      next(error);
+    }
+  },
+
+  [CONTROLLERS.UPDATE_PROFILE]: async (req, res, next) => {
+    try {
+      const userId = _.get(req, "user._id", null);
+      const data = await usersService.updateProfile(userId, req.body);
+      res.status(StatusCodes.OK).json({ success: true, data });
+    } catch (error) {
+      logger.error(error);
+      next(error);
+    }
+  },
   [CONTROLLERS.LIST_USERS]: async (req, res, next) => {
     try {
       const data = await usersService.listUsers(req.query);

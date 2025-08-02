@@ -1,23 +1,26 @@
 import mongoose from "mongoose";
 import { USER_ROLES } from "../../../common/helpers/constant.js";
 import nanoid from "../../../common/utils/nanoID/index.js";
-import { GENDERS } from "../helpers/constant.js";
-
-const options = { discriminatorKey: "userType", collection: "users" };
+import { GENDERS, NO_ADDRESS } from "../helpers/constant.js";
 
 const baseUserSchema = new mongoose.Schema(
   {
     _id: { type: String, default: () => nanoid() },
-    firstName: String,
-    lastName: String,
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
     picture: { type: String, default: "" },
-    phoneNumber: { type: String, unique: true },
-    email: { type: String, unique: true },
-    password: String,
-    isVerified: { type: Boolean, default: false },
+    phoneNumber: { type: String, unique: true, required: true },
+    email: { type: String, unique: true, required: true },
+    password: { type: String, required: true },
+    isVerified: { type: Boolean, default: true },
+    userType: {
+      type: String,
+      required: true,
+      enum: Object.values(USER_ROLES),
+    },
     createdAt: { type: Date, default: Date.now },
   },
-  options
+  { discriminatorKey: "userType", collection: "users" }
 );
 
 const User = mongoose.model("User", baseUserSchema);
@@ -34,15 +37,26 @@ User.discriminators = {
       insuranceNumber: {
         type: String,
         unique: true,
+        sparse: true,
       },
     })
   ),
   [USER_ROLES.DOCTOR]: User.discriminator(
     USER_ROLES.DOCTOR,
     new mongoose.Schema({
-      specialty: String,
-      clinicAddress: String,
-      licenseNumber: String,
+      specialty: {
+        type: String,
+        required: true,
+      },
+      clinicAddress: {
+        type: String,
+        required: true,
+        default: NO_ADDRESS,
+      },
+      licenseNumber: {
+        type: String,
+        required: true,
+      },
     })
   ),
   [USER_ROLES.FINANCE]: User.discriminator(

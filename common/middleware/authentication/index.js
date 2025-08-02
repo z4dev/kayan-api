@@ -2,6 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import jwt from "jsonwebtoken";
 import _ from "lodash";
 import { JWT_SECRET } from "../../../config/env/index.js";
+import User from "../../../server/user/model/index.js";
 import { errorCodes, USER_ROLES } from "../../helpers/constant.js";
 import { isValidRole } from "../../helpers/isValid.js";
 import logger from "../../utils/logger/index.js";
@@ -30,7 +31,6 @@ const Authenticate = async (req, res, next) => {
     const token = authHeader.split(" ")[1];
 
     const decoded = jwt.verify(token, JWT_SECRET);
-    // get user id from token
     const userId = _.get(decoded, "userId", null);
 
     if (!userId)
@@ -40,7 +40,9 @@ const Authenticate = async (req, res, next) => {
         error: errorCodes.INVALID_TOKEN.code,
       });
 
-    const userRole = _.get(user, "role", null);
+    const user = await User.findOneWithoutPassword({ _id: userId });
+
+    const userRole = _.get(user, "userType", null);
 
     if (!isValidRole(userRole, USER_ROLES)) {
       return res.status(StatusCodes.FORBIDDEN).json({

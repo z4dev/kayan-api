@@ -83,39 +83,73 @@ class UsersService {
     return { user: userObj, token };
   }
 
-  /**
-   * Admin creates doctor
-   */
-  async createDoctor(data) {
-    return await this._createRoleUser(data, USER_ROLES.DOCTOR);
-  }
-
-  /**
-   * Admin creates finance user
-   */
-  async createFinance(data) {
-    return await this._createRoleUser(data, USER_ROLES.FINANCE);
-  }
-
-  async _createRoleUser(data, role) {
-    const { email, phoneNumber, password } = data;
+  async registerDoctor(data) {
+    const { email, phoneNumber, password, licenseNumber } = data;
 
     const existing = await User.findOne({
       $or: [{ email }, { phoneNumber }],
     });
+
     if (existing) {
-      throw new ErrorResponse("Email or phone already exists", BAD_REQUEST);
+      throw new ErrorResponse(
+        usersErrors.EMAIL_OR_PHONE_EXISTS.message,
+        BAD_REQUEST,
+        usersErrors.EMAIL_OR_PHONE_EXISTS.code
+      );
+    }
+
+    const existingLicense = await User.findOne({ licenseNumber });
+    if (existingLicense) {
+      throw new ErrorResponse(
+        usersErrors.LICENSE_NUMBER_EXISTS.message,
+        BAD_REQUEST,
+        usersErrors.LICENSE_NUMBER_EXISTS.code
+      );
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     data.password = hashedPassword;
 
-    const createdUser = await User.discriminators[role].create(data);
+    const createdUser = await User.createByRole(USER_ROLES.DOCTOR, data);
 
     const userObj = createdUser.toObject();
     delete userObj.password;
 
-    return userObj;
+    const token = await generateToken(userObj);
+    return { user: userObj, token };
+  }
+
+  async getProfile(userId) {
+    const user = await User.findOneWithoutPassword({ _id: userId });
+
+    if (!user) {
+      throw new ErrorResponse(
+        usersErrors.PATIENT_NOT_FOUND.message,
+        NOT_FOUND,
+        usersErrors.PATIENT_NOT_FOUND.code
+      );
+    }
+
+    return user;
+  }
+
+  async updateProfile(userId, updateData) {
+    const user = await User.findOneWithoutPassword({ _id: userId });
+    if (!user) {
+      throw new ErrorResponse(
+        usersErrors.USER_NOT_FOUND.message,
+        NOT_FOUND,
+        usersErrors.USER_NOT_FOUND.code
+      );
+    }
+
+    if (updateData.password) {
+      updateData.password = await bcrypt.hash(updateData.password, 10);
+    }
+
+    const updatedUser = await User.update({ _id: userId }, updateData);
+
+    return updatedUser;
   }
 
   async getUser(id) {

@@ -1,1 +1,22 @@
-export default "fdsdf"
+import { USER_ROLES } from "../../common/helpers/constant.js";
+import { CONTROLLERS } from "./helpers/constant.js";
+
+export default {
+  [CONTROLLERS.GET_PROFILE]: [
+    USER_ROLES["PATIENT"],
+    USER_ROLES["DOCTOR"],
+    USER_ROLES["FINANCE"],
+  ],
+  [CONTROLLERS.UPDATE_PROFILE]: [
+    USER_ROLES["PATIENT"],
+    USER_ROLES["DOCTOR"],
+    USER_ROLES["FINANCE"],
+  ],
+  [CONTROLLERS.LIST_DOCTORS]: [USER_ROLES["PATIENT"], USER_ROLES["FINANCE"]],
+  [CONTROLLERS.LIST_PATIENTS]: [USER_ROLES["DOCTOR"], USER_ROLES["FINANCE"]],
+  [CONTROLLERS.GET_DOCTOR]: [
+    USER_ROLES["PATIENT"],
+    USER_ROLES["FINANCE"],
+    USER_ROLES["DOCTOR"],
+  ],
+};
