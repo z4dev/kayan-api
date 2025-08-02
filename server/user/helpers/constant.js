@@ -1,6 +1,6 @@
 export const CONTROLLERS = {
   LOGIN: "login",
-  REGISTER_PATIENT: "REGISTER_PATIENT",
+  REGISTER_PATIENT: "RegisterPatient",
   LIST_USERS: "listUsers",
   GET_USER: "getUser",
   LIST_DOCTORS: "listDoctors",
@@ -28,5 +28,13 @@ export const usersErrors = Object.freeze({
   INVALID_CREDENTIALS: {
     code: 103,
     message: "Invalid email or password",
+  },
+  INSURANCE_NUMBER_EXISTS: {
+    code: 104,
+    message: "Insurance number already exists",
+  },
+  EMAIL_OR_PHONE_EXISTS: {
+    code: 105,
+    message: "Email or phone number already exists",
   },
 });

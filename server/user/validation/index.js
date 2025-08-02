@@ -2,7 +2,6 @@ import Joi from "joi";
 import { CONTROLLERS, GENDERS } from "../helpers/constant.js";
 
 export default {
-    
   [CONTROLLERS.LIST_USERS]: {
     query: Joi.object({
       page: Joi.number().optional(),
@@ -20,21 +19,24 @@ export default {
     body: Joi.object({
       firstName: Joi.string().required(),
       lastName: Joi.string().required(),
-      gender: Joi.string().valid(...Object.keys(GENDERS)).required(),
-      dateOfBirth: Joi.date().required(),
+      gender: Joi.string()
+        .valid(...Object.keys(GENDERS))
+        .required(),
+      dateOfBirth: Joi.date().iso().required(),
       insuranceNumber: Joi.string().optional(),
       picture: Joi.string().optional(),
       phoneNumber: Joi.string().required(),
       email: Joi.string().email().required(),
       password: Joi.string().required(),
-      rePassword: Joi.string().required().valid(Joi.ref("password")),
+      rePassword: Joi.string().required().valid(Joi.ref("password")).messages({
+        "any.only": "Passwords do not match",
+      }),
       userType: Joi.forbidden().messages({
         "any.unknown": "You cannot specify userType manually.",
       }),
-      isVerified: Joi.boolean().optional().default(false),
+      isVerified: Joi.boolean().optional().default(true),
     }),
   },
-
   [CONTROLLERS.LOGIN]: {
     body: Joi.object({
       email: Joi.string().required(),

@@ -31,7 +31,10 @@ User.discriminators = {
         enum: Object.keys(GENDERS),
       },
       dateOfBirth: Date,
-      insuranceNumber: String,
+      insuranceNumber: {
+        type: String,
+        unique: true,
+      },
     })
   ),
   [USER_ROLES.DOCTOR]: User.discriminator(

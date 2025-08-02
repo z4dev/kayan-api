@@ -50,8 +50,25 @@ class UsersService {
       $or: [{ email }, { phoneNumber }],
     });
 
+    if (data["insuranceNumber"]) {
+      const existingInsurance = await User.findOne({
+        insuranceNumber: data["insuranceNumber"],
+      });
+      if (existingInsurance) {
+        throw new ErrorResponse(
+          usersErrors.INSURANCE_NUMBER_EXISTS.message,
+          BAD_REQUEST,
+          usersErrors.INSURANCE_NUMBER_EXISTS.code
+        );
+      }
+    }
+
     if (existing) {
-      throw new ErrorResponse("Email or phone already exists", BAD_REQUEST);
+      throw new ErrorResponse(
+        usersErrors.EMAIL_OR_PHONE_EXISTS.message,
+        BAD_REQUEST,
+        usersErrors.EMAIL_OR_PHONE_EXISTS.code
+      );
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
