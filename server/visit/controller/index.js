@@ -18,7 +18,7 @@ export default {
 
   [CONTROLLERS.LIST_VISITS]: async (req, res, next) => {
     try {
-      const userId = _.get(req, "user.id", null);
+      const userId = _.get(req, "user._id", null);
       const data = await visitsService.listVisits(userId, req.query);
       res.status(StatusCodes.OK).json({ success: true, data });
     } catch (error) {

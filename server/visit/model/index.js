@@ -2,7 +2,6 @@ import VisitSchema from "../schema/index.js";
 class Visit {
   async find(selectors = {}, options = {}) {
     const { limit, skip, sort, projection } = options;
-    console.log(limit, skip, sort);
     return await VisitSchema.find(selectors)
       .select(projection)
       .sort(sort || "-updatedAt")

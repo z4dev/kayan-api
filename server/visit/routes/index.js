@@ -4,12 +4,11 @@ import Authorization from "../../../common/middleware/authorization/index.js";
 import validateRequest from "../../../common/middleware/requestValidation/index.js";
 import Controller from "../controller/index.js";
 import { CONTROLLERS } from "../helpers/constant.js";
-import validationSchemas from "../validation/index.js";
 import permission from "../permission.js";
+import validationSchemas from "../validation/index.js";
 
 const router = express.Router();
 
-// List visits
 router.get(
   "/",
   Authenticate,
@@ -17,13 +16,18 @@ router.get(
   Controller[CONTROLLERS.LIST_VISITS]
 );
 
-
-// create visit (Patient)
 router.post(
   "/",
   Authenticate,
   validateRequest(validationSchemas[CONTROLLERS.CREATE_VISIT]),
   Controller[CONTROLLERS.CREATE_VISIT]
+);
+
+router.get(
+  "/:id",
+  Authenticate,
+  validateRequest(validationSchemas[CONTROLLERS.GET_VISIT]),
+  Controller[CONTROLLERS.GET_VISIT]
 );
 
 // Search visits (Finance)

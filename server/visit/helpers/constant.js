@@ -38,7 +38,8 @@ export const visitsErrors = Object.freeze({
     code: 303,
   },
   DOCTOR_TIME_SLOT_TAKEN: {
-    message: "Doctor already has a visit during this time slot",
+    message: (scheduledTime, dayOfWeek, busySlots) =>
+      `Doctor is already booked at ${scheduledTime} on ${dayOfWeek}. Busy slots: ${busySlots.join(", ")}`,
     code: 305,
   },
 });

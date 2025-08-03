@@ -13,7 +13,6 @@ class VisitsService {
   async createVisit(userId, data) {
     const { doctorId, scheduledDate, scheduledTime } = data;
 
-    // 1. Verify patient exists
     const patient = await User.findOne({
       _id: userId,
       userType: USER_ROLES.PATIENT,
@@ -27,7 +26,6 @@ class VisitsService {
       );
     }
 
-    // 2. Verify doctor exists
     const doctor = await User.findOne({
       _id: doctorId,
       userType: USER_ROLES.DOCTOR,
@@ -41,14 +39,12 @@ class VisitsService {
       );
     }
 
-    // 3. Parse scheduled time
     const date = new Date(scheduledDate);
     const [hT, mT] = scheduledTime.split(":").map(Number);
     const requestedStart = new Date(date);
     requestedStart.setHours(hT, mT, 0, 0);
-    const requestedEnd = new Date(requestedStart.getTime() + 30 * 60000); // 30 minutes visit
+    const requestedEnd = new Date(requestedStart.getTime() + 30 * 60000);
 
-    // 4. Check if doctor is available that day and time
     const dayOfWeek = requestedStart.toLocaleDateString("en-US", {
       weekday: "long",
     });
@@ -77,7 +73,6 @@ class VisitsService {
       );
     }
 
-    // 5. Check for conflicts with other visits on the same day
     const startOfDay = new Date(requestedStart);
     startOfDay.setHours(0, 0, 0, 0);
     const endOfDay = new Date(requestedStart);
@@ -89,25 +84,34 @@ class VisitsService {
       status: { $in: [VISIT_STATUS.SCHEDULED, VISIT_STATUS.IN_PROGRESS] },
     });
 
+    const busySlots = [];
+
     const hasConflict = existingVisits.some((visit) => {
       const [cH, cM] = visit.scheduledTime.split(":").map(Number);
       const conflictStart = new Date(date);
       conflictStart.setHours(cH, cM, 0, 0);
-      const conflictEnd = new Date(conflictStart.getTime() + 30 * 60000); // 30-minute visit
+      const conflictEnd = new Date(conflictStart.getTime() + 30 * 60000);
 
-      // Check for overlap
+      // Collect the actual DB times (formatted from raw values)
+      const formattedStart = conflictStart.toTimeString().slice(0, 5); // "HH:MM"
+      const formattedEnd = conflictEnd.toTimeString().slice(0, 5);
+      busySlots.push(`${formattedStart}–${formattedEnd}`);
+
       return requestedStart < conflictEnd && requestedEnd > conflictStart;
     });
 
     if (hasConflict) {
       throw new ErrorResponse(
-        visitsErrors.DOCTOR_TIME_SLOT_TAKEN.message,
+        visitsErrors.DOCTOR_TIME_SLOT_TAKEN.message(
+          scheduledTime,
+          dayOfWeek,
+          busySlots
+        ),
         CONFLICT,
         visitsErrors.DOCTOR_TIME_SLOT_TAKEN.code
       );
     }
 
-    // 6. Create the visit
     const visit = await Visit.create({
       patientId: patient._id,
       doctorId,
@@ -127,9 +131,30 @@ class VisitsService {
 
     const options = getPaginationAndSortingOptions(query);
 
-    const visits = await Visit.find({ _id: userId, _query }, options);
+    const filter = {};
 
-    const count = await Visit.count({ _id: userId, ..._query });
+    const currentUser = await User.findOne({
+      _id: userId,
+      userType: { $in: [USER_ROLES.DOCTOR, USER_ROLES.PATIENT] },
+    });
+
+    if (!currentUser) {
+      throw new ErrorResponse(
+        usersErrors.USER_NOT_FOUND.message,
+        BAD_REQUEST,
+        usersErrors.USER_NOT_FOUND.code
+      );
+    }
+    if (currentUser.userType === USER_ROLES.DOCTOR) {
+      filter.doctorId = userId;
+    } else if (currentUser.userType === USER_ROLES.PATIENT) {
+      filter.patientId = userId;
+    }
+    const _queryWithFilter = { ..._query, ...filter };
+
+    const visits = await Visit.find(_queryWithFilter, options);
+
+    const count = await Visit.count(_queryWithFilter);
 
     return {
       visits,
