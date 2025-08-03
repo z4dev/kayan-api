@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
-import nanoid from "../../../common/utils/nanoID";
-import { VISIT_STATUS } from "../helpers/constant";
+import mongoose from "mongoose";
+import nanoid from "../../../common/utils/nanoID/index.js";
+import { VISIT_STATUS } from "../helpers/constant.js";
 
 const visitSchema = new mongoose.Schema({
   _id: { type: String, default: () => nanoid() },

@@ -1,32 +1,36 @@
 import express from "express";
-import authMiddleware from "../../../common/middleware/auth/index.js";
+import Authenticate from "../../../common/middleware/authentication/index.js";
+import Authorization from "../../../common/middleware/authorization/index.js";
 import validateRequest from "../../../common/middleware/requestValidation/index.js";
 import Controller from "../controller/index.js";
 import { CONTROLLERS } from "../helpers/constant.js";
 import validationSchemas from "../validation/index.js";
+import permission from "../permission.js";
 
 const router = express.Router();
-
-// Create visit (Patient can reserve)
-router.post(
-  "/",
-  authMiddleware,
-  validateRequest(validationSchemas[CONTROLLERS.CREATE_VISIT]),
-  Controller[CONTROLLERS.CREATE_VISIT]
-);
 
 // List visits
 router.get(
   "/",
-  authMiddleware,
+  Authenticate,
   validateRequest(validationSchemas[CONTROLLERS.LIST_VISITS]),
   Controller[CONTROLLERS.LIST_VISITS]
+);
+
+
+// create visit (Patient)
+router.post(
+  "/",
+  Authenticate,
+  validateRequest(validationSchemas[CONTROLLERS.CREATE_VISIT]),
+  Controller[CONTROLLERS.CREATE_VISIT]
 );
 
 // Search visits (Finance)
 router.get(
   "/search",
-  authMiddleware,
+  Authorization.Authorize(permission[CONTROLLERS.SEARCH_VISITS]),
+  Authenticate,
   validateRequest(validationSchemas[CONTROLLERS.SEARCH_VISITS]),
   Controller[CONTROLLERS.SEARCH_VISITS]
 );
@@ -34,14 +38,14 @@ router.get(
 // Get doctor's active visit
 router.get(
   "/doctor/active",
-  authMiddleware,
+  Authenticate,
   Controller[CONTROLLERS.GET_DOCTOR_ACTIVE_VISIT]
 );
 
 // Get patient visits
 router.get(
   "/patient/:patientId",
-  authMiddleware,
+  Authenticate,
   validateRequest(validationSchemas[CONTROLLERS.GET_PATIENT_VISITS]),
   Controller[CONTROLLERS.GET_PATIENT_VISITS]
 );
@@ -49,7 +53,7 @@ router.get(
 // Get doctor visits
 router.get(
   "/doctor/:doctorId",
-  authMiddleware,
+  Authenticate,
   validateRequest(validationSchemas[CONTROLLERS.GET_DOCTOR_VISITS]),
   Controller[CONTROLLERS.GET_DOCTOR_VISITS]
 );
@@ -57,7 +61,7 @@ router.get(
 // Get specific visit
 router.get(
   "/:id",
-  authMiddleware,
+  Authenticate,
   validateRequest(validationSchemas[CONTROLLERS.GET_VISIT]),
   Controller[CONTROLLERS.GET_VISIT]
 );
@@ -65,7 +69,7 @@ router.get(
 // Start visit (Doctor)
 router.patch(
   "/:id/start",
-  authMiddleware,
+  Authenticate,
   validateRequest(validationSchemas[CONTROLLERS.START_VISIT]),
   Controller[CONTROLLERS.START_VISIT]
 );
@@ -73,7 +77,7 @@ router.patch(
 // End visit (Doctor)
 router.patch(
   "/:id/end",
-  authMiddleware,
+  Authenticate,
   validateRequest(validationSchemas[CONTROLLERS.END_VISIT]),
   Controller[CONTROLLERS.END_VISIT]
 );
@@ -81,7 +85,7 @@ router.patch(
 // Update visit notes (Doctor)
 router.patch(
   "/:id/notes",
-  authMiddleware,
+  Authenticate,
   validateRequest(validationSchemas[CONTROLLERS.UPDATE_VISIT_NOTES]),
   Controller[CONTROLLERS.UPDATE_VISIT_NOTES]
 );
@@ -89,7 +93,7 @@ router.patch(
 // Add treatment (Doctor)
 router.post(
   "/:id/treatments",
-  authMiddleware,
+  Authenticate,
   validateRequest(validationSchemas[CONTROLLERS.ADD_TREATMENT]),
   Controller[CONTROLLERS.ADD_TREATMENT]
 );
@@ -97,7 +101,7 @@ router.post(
 // Update treatment (Doctor)
 router.patch(
   "/:visitId/treatments/:treatmentId",
-  authMiddleware,
+  Authenticate,
   validateRequest(validationSchemas[CONTROLLERS.UPDATE_TREATMENT]),
   Controller[CONTROLLERS.UPDATE_TREATMENT]
 );
@@ -105,7 +109,7 @@ router.patch(
 // Remove treatment (Doctor)
 router.delete(
   "/:visitId/treatments/:treatmentId",
-  authMiddleware,
+  Authenticate,
   validateRequest(validationSchemas[CONTROLLERS.REMOVE_TREATMENT]),
   Controller[CONTROLLERS.REMOVE_TREATMENT]
 );

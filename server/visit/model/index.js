@@ -1,52 +1,97 @@
-import Visit from "../schema/index.js";
-
-class VisitModel {
+import VisitSchema from "../schema/index.js";
+class Visit {
   async find(selectors = {}, options = {}) {
-    const { limit, skip, sort, projection, populate } = options;
-    let query = Visit.find(selectors);
-
-    if (projection) query = query.select(projection);
-    if (sort) query = query.sort(sort);
-    if (limit) query = query.limit(limit);
-    if (skip) query = query.skip(skip);
-    if (populate) query = query.populate(populate);
-
-    return await query.lean().maxTimeMS(60000);
+    const { limit, skip, sort, projection } = options;
+    console.log(limit, skip, sort);
+    return await VisitSchema.find(selectors)
+      .select(projection)
+      .sort(sort || "-updatedAt")
+      .limit(limit)
+      .skip(skip || 0)
+      .lean()
+      .maxTimeMS(60000);
   }
 
   async findOne(selector = {}, projection = {}, populationList = []) {
-    let query = Visit.findOne(selector);
+    return await VisitSchema.findOne(selector)
+      .select(projection)
+      .lean()
+      .populate(populationList);
+  }
 
-    if (projection && Object.keys(projection).length > 0) {
-      query = query.select(projection);
-    }
+  async findOneWithoutLean(
+    selector = {},
+    projection = {},
+    populationList = []
+  ) {
+    return await VisitSchema.findOne(selector)
+      .select(projection)
+      .populate(populationList);
+  }
 
-    if (populationList && populationList.length > 0) {
-      query = query.populate(populationList);
-    }
-
-    return await query.lean();
+  async findOneWithoutPassword(
+    selector = {},
+    projection = {},
+    populationList = []
+  ) {
+    return await this.findOne(selector, projection, populationList);
   }
 
   async create(payload) {
-    return await Visit.create(payload);
+    return await VisitSchema.create(payload);
   }
 
-  async updateOne(selector, update) {
-    return await Visit.updateOne(selector, update);
+  async update(selector = {}, updateData = {}, options = {}) {
+    const { upsert = false, new: returnNew = true } = options;
+    return await VisitSchema.findOneAndUpdate(
+      selector,
+      { $set: updateData },
+      {
+        new: returnNew,
+        upsert,
+        runValidators: true,
+      }
+    )
+      .select("-__v -password")
+      .lean();
   }
 
-  async deleteOne(selector) {
-    return await Visit.deleteOne(selector);
+  async createByRole(userType, payload) {
+    const discriminatorModel = VisitSchema.discriminators?.[userType];
+    if (!discriminatorModel) {
+      throw new Error(`Invalid userType discriminator: ${userType}`);
+    }
+
+    return await discriminatorModel.create({
+      ...payload,
+      userType,
+    });
   }
 
-  async countDocuments(selector = {}) {
-    return await Visit.countDocuments(selector);
+  async getUserByRole(id, role) {
+    const discriminator = VisitSchema.discriminators?.[role];
+    console.log(discriminator);
+    const user = await discriminator.findById(id).lean();
+    console.log(user);
+
+    const { password, __v, ...clean } = user;
+    return clean;
   }
 
-  async aggregate(pipeline) {
-    return await Visit.aggregate(pipeline);
+  async getUserByRoleExcludePassword(id, role) {
+    const discriminator = VisitSchema.discriminators?.[role];
+    console.log(discriminator);
+    const user = await discriminator.findById(id).lean();
+    console.log(user);
+
+    const { password, __v, ...clean } = user;
+    return clean;
+  }
+
+  async count(selectors = {}) {
+    const result = await VisitSchema.countDocuments(selectors).maxTimeMS(60000);
+    return result;
   }
 }
 
-export default new VisitModel();
+export default new Visit();

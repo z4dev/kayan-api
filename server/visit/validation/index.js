@@ -4,13 +4,15 @@ import { CONTROLLERS, VISIT_STATUS } from "../helpers/constant.js";
 export default {
   [CONTROLLERS.CREATE_VISIT]: {
     body: Joi.object({
-      patientId: Joi.string().forbidden(),
       doctorId: Joi.string().required(),
-      scheduledDate: Joi.date().iso().optional(),
-      notes: Joi.string().optional().allow(""),
+      scheduledDate: Joi.date().iso().required(),
+      scheduledTime: Joi.string()
+        .pattern(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/)
+        .required(),
+      notes: Joi.string().allow("").optional(),
+      patientId: Joi.forbidden(),
     }),
   },
-
   [CONTROLLERS.LIST_VISITS]: {
     query: Joi.object({
       page: Joi.number().integer().min(1).optional().default(1),

@@ -1,4 +1,5 @@
 import { StatusCodes } from "http-status-codes";
+import _ from "lodash";
 import logger from "../../../common/utils/logger/index.js";
 import { CONTROLLERS } from "../helpers/constant.js";
 import visitsService from "../service/visitsService.js";
@@ -6,8 +7,8 @@ import visitsService from "../service/visitsService.js";
 export default {
   [CONTROLLERS.CREATE_VISIT]: async (req, res, next) => {
     try {
-      
-      const data = await visitsService.createVisit(req.body);
+      const userId = _.get(req, "user._id", null);
+      const data = await visitsService.createVisit(userId, req.body);
       res.status(StatusCodes.CREATED).json({ success: true, data });
     } catch (error) {
       logger.error(error);
@@ -17,7 +18,8 @@ export default {
 
   [CONTROLLERS.LIST_VISITS]: async (req, res, next) => {
     try {
-      const data = await visitsService.listVisits(req.query);
+      const userId = _.get(req, "user.id", null);
+      const data = await visitsService.listVisits(userId, req.query);
       res.status(StatusCodes.OK).json({ success: true, data });
     } catch (error) {
       logger.error(error);

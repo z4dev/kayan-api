@@ -14,16 +14,31 @@ export const CONTROLLERS = {
   GET_DOCTOR_VISITS: "getDoctorVisits",
 };
 
+//TODO adding approving workflow
+
 export const VISIT_STATUS = {
-  PENDING: "PENDING",
+  SCHEDULED: "SCHEDULED",
   IN_PROGRESS: "IN_PROGRESS",
   COMPLETED: "COMPLETED",
   CANCELLED: "CANCELLED",
 };
 
+export const VISIT_DURATION_MINUTES = 60;
 export const visitsErrors = Object.freeze({
   DOCTOR_HAS_ALREADY_ACTIVE_VISIT: {
-    message: "Doctor has already an active visit",
-    code: 201,
+    message: (day, time) => `Doctor is not available on ${day} at ${time}`,
+    code: 301,
+  },
+  VISIT_NOT_FOUND: {
+    message: "Visit not found",
+    code: 302,
+  },
+  DOCTOR_HAS_ACTIVE_VISIT: {
+    message: "Doctor has an active visit",
+    code: 303,
+  },
+  DOCTOR_TIME_SLOT_TAKEN: {
+    message: "Doctor already has a visit during this time slot",
+    code: 305,
   },
 });

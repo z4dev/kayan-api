@@ -1,95 +1,140 @@
 import { StatusCodes } from "http-status-codes";
 import { USER_ROLES } from "../../../common/helpers/constant.js";
 import ErrorResponse from "../../../common/utils/errorResponse/index.js";
-import User from "../../users/model/index.js";
+import { getPaginationAndSortingOptions } from "../../../common/utils/pagination/index.js";
+import { usersErrors } from "../../user/helpers/constant.js";
+import User from "../../user/model/index.js";
 import { VISIT_STATUS, visitsErrors } from "../helpers/constant.js";
 import Visit from "../model/index.js";
 
 const { BAD_REQUEST, FORBIDDEN, CONFLICT } = StatusCodes;
 
 class VisitsService {
-  async createVisit(data) {
-    const { patientId, doctorId, scheduledDate, notes } = data;
+  async createVisit(userId, data) {
+    const { doctorId, scheduledDate, scheduledTime } = data;
 
-    // Check if patient exists
+    // 1. Verify patient exists
     const patient = await User.findOne({
-      _id: patientId,
+      _id: userId,
       userType: USER_ROLES.PATIENT,
     });
+
     if (!patient) {
       throw new ErrorResponse(
-        visitsErrors.PATIENT_NOT_FOUND.message,
+        usersErrors.PATIENT_NOT_FOUND.message,
         BAD_REQUEST,
-        visitsErrors.PATIENT_NOT_FOUND.code
+        usersErrors.PATIENT_NOT_FOUND.code
       );
     }
 
-    // Check if doctor exists
+    // 2. Verify doctor exists
     const doctor = await User.findOne({
       _id: doctorId,
       userType: USER_ROLES.DOCTOR,
     });
+
     if (!doctor) {
       throw new ErrorResponse(
-        visitsErrors.DOCTOR_NOT_FOUND.message,
+        usersErrors.DOCTOR_NOT_FOUND.message,
         BAD_REQUEST,
-        visitsErrors.DOCTOR_NOT_FOUND.code
+        usersErrors.DOCTOR_NOT_FOUND.code
       );
     }
 
-    // Check if doctor has an active visit
-    const activeVisit = await Visit.findOne({
+    // 3. Parse scheduled time
+    const date = new Date(scheduledDate);
+    const [hT, mT] = scheduledTime.split(":").map(Number);
+    const requestedStart = new Date(date);
+    requestedStart.setHours(hT, mT, 0, 0);
+    const requestedEnd = new Date(requestedStart.getTime() + 30 * 60000); // 30 minutes visit
+
+    // 4. Check if doctor is available that day and time
+    const dayOfWeek = requestedStart.toLocaleDateString("en-US", {
+      weekday: "long",
+    });
+
+    const matchingSlot = doctor.availability?.find((slot) => {
+      if (slot.dayOfWeek !== dayOfWeek) return false;
+
+      const [startH, startM] = slot.startTime.split(":").map(Number);
+      const [endH, endM] = slot.endTime.split(":").map(Number);
+
+      const startMinutes = startH * 60 + startM;
+      const endMinutes = endH * 60 + endM;
+      const visitMinutes = hT * 60 + mT;
+
+      return visitMinutes >= startMinutes && visitMinutes + 30 <= endMinutes;
+    });
+
+    if (!matchingSlot) {
+      throw new ErrorResponse(
+        visitsErrors.DOCTOR_HAS_ALREADY_ACTIVE_VISIT.message(
+          dayOfWeek,
+          scheduledTime
+        ),
+        BAD_REQUEST,
+        visitsErrors.DOCTOR_HAS_ALREADY_ACTIVE_VISIT.code
+      );
+    }
+
+    // 5. Check for conflicts with other visits on the same day
+    const startOfDay = new Date(requestedStart);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(requestedStart);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const existingVisits = await Visit.find({
       doctorId,
+      scheduledDate: { $gte: startOfDay, $lte: endOfDay },
       status: { $in: [VISIT_STATUS.SCHEDULED, VISIT_STATUS.IN_PROGRESS] },
     });
 
-    if (activeVisit) {
+    const hasConflict = existingVisits.some((visit) => {
+      const [cH, cM] = visit.scheduledTime.split(":").map(Number);
+      const conflictStart = new Date(date);
+      conflictStart.setHours(cH, cM, 0, 0);
+      const conflictEnd = new Date(conflictStart.getTime() + 30 * 60000); // 30-minute visit
+
+      // Check for overlap
+      return requestedStart < conflictEnd && requestedEnd > conflictStart;
+    });
+
+    if (hasConflict) {
       throw new ErrorResponse(
-        visitsErrors.DOCTOR_HAS_ACTIVE_VISIT.message,
+        visitsErrors.DOCTOR_TIME_SLOT_TAKEN.message,
         CONFLICT,
-        visitsErrors.DOCTOR_HAS_ACTIVE_VISIT.code
+        visitsErrors.DOCTOR_TIME_SLOT_TAKEN.code
       );
     }
 
-    const visitData = {
-      patientId,
+    // 6. Create the visit
+    const visit = await Visit.create({
+      patientId: patient._id,
       doctorId,
-      scheduledDate: scheduledDate || new Date(),
+      scheduledDate: date,
+      scheduledTime,
       status: VISIT_STATUS.SCHEDULED,
-      notes: notes || "",
       treatments: [],
       totalAmount: 0,
-    };
+      medicalNotes: "",
+    });
 
-    const visit = await Visit.create(visitData);
     return await this.getVisit(visit._id);
   }
 
-  async listVisits(query) {
-    const { page = 1, limit = 10, status, doctorId, patientId } = query;
-    const skip = (page - 1) * limit;
+  async listVisits(userId, query) {
+    const { page, limit, skip, sortBy, sortOrder, ..._query } = query;
 
-    const filter = {};
-    if (status) filter.status = status;
-    if (doctorId) filter.doctorId = doctorId;
-    if (patientId) filter.patientId = patientId;
+    const options = getPaginationAndSortingOptions(query);
 
-    const visits = await Visit.find(filter, {
-      limit: Number.parseInt(limit),
-      skip: Number.parseInt(skip),
-      sort: { createdAt: -1 },
-    });
+    const visits = await Visit.find({ _id: userId, _query }, options);
 
-    const total = await Visit.countDocuments(filter);
+    const count = await Visit.count({ _id: userId, ..._query });
 
     return {
       visits,
-      pagination: {
-        page: Number.parseInt(page),
-        limit: Number.parseInt(limit),
-        total,
-        pages: Math.ceil(total / limit),
-      },
+      ...options,
+      count,
     };
   }
 
@@ -193,6 +238,8 @@ class VisitsService {
 
     return await this.getVisit(visitId);
   }
+
+  // treatment management methods
 
   async addTreatment(visitId, treatmentData, doctorId) {
     const visit = await Visit.findOne({ _id: visitId });
