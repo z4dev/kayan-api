@@ -4,7 +4,7 @@ import { CONTROLLERS, VISIT_STATUS } from "../helpers/constant.js";
 export default {
   [CONTROLLERS.CREATE_VISIT]: {
     body: Joi.object({
-      patientId: Joi.string().required(),
+      patientId: Joi.string().forbidden(),
       doctorId: Joi.string().required(),
       scheduledDate: Joi.date().iso().optional(),
       notes: Joi.string().optional().allow(""),

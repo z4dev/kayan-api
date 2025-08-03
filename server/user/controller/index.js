@@ -66,6 +66,19 @@ export default {
       next(error);
     }
   },
+
+  [CONTROLLERS.UPDATE_AVAILABILITY]: async (req, res, next) => {
+    try {
+      const userId = _.get(req, "user._id", null);
+      console.log(userId)
+      console.log(req.body)
+      const data = await usersService.updateAvailability(userId, req.body);
+      res.status(StatusCodes.OK).json({ success: true, data });
+    } catch (error) {
+      logger.error(error);
+      next(error);
+    }
+  },
   [CONTROLLERS.LIST_USERS]: async (req, res, next) => {
     try {
       const data = await usersService.listUsers(req.query);

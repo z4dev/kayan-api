@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { USER_ROLES } from "../../../common/helpers/constant.js";
 import nanoid from "../../../common/utils/nanoID/index.js";
-import { GENDERS, NO_ADDRESS } from "../helpers/constant.js";
+import { DAYS_OF_WEEK, GENDERS, NO_ADDRESS } from "../helpers/constant.js";
 
 const baseUserSchema = new mongoose.Schema(
   {
@@ -23,10 +23,10 @@ const baseUserSchema = new mongoose.Schema(
   { discriminatorKey: "userType", collection: "users" }
 );
 
-const User = mongoose.model("User", baseUserSchema);
+const UserSchema = mongoose.model("User", baseUserSchema);
 
-User.discriminators = {
-  [USER_ROLES.PATIENT]: User.discriminator(
+UserSchema.discriminators = {
+  [USER_ROLES.PATIENT]: UserSchema.discriminator(
     USER_ROLES.PATIENT,
     new mongoose.Schema({
       gender: {
@@ -41,7 +41,7 @@ User.discriminators = {
       },
     })
   ),
-  [USER_ROLES.DOCTOR]: User.discriminator(
+  [USER_ROLES.DOCTOR]: UserSchema.discriminator(
     USER_ROLES.DOCTOR,
     new mongoose.Schema({
       specialty: {
@@ -57,12 +57,37 @@ User.discriminators = {
         type: String,
         required: true,
       },
+      aboutDoctor: {
+        type: String,
+        default: "",
+      },
+      consultationFee: {
+        type: Number,
+        default: 0,
+      },
+      availability: [
+        {
+          dayOfWeek: {
+            type: String,
+            enum: DAYS_OF_WEEK,
+            required: true,
+          },
+          startTime: {
+            type: String,
+            required: true,
+          },
+          endTime: {
+            type: String,
+            required: true,
+          },
+        },
+      ],
     })
   ),
-  [USER_ROLES.FINANCE]: User.discriminator(
+  [USER_ROLES.FINANCE]: UserSchema.discriminator(
     USER_ROLES.FINANCE,
     new mongoose.Schema({})
   ),
 };
 
-export default User;
+export default UserSchema;

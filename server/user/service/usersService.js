@@ -259,6 +259,38 @@ class UsersService {
     }
     return patient;
   }
+
+  async updateAvailability(userId, data) {
+    const { availability } = data;
+
+    const doctor = await User.findOneWithoutLean(
+      {
+        _id: userId,
+        userType: USER_ROLES.DOCTOR,
+      },
+      "-password"
+    );
+
+    if (!doctor) {
+      throw new ErrorResponse(
+        usersErrors.DOCTOR_NOT_FOUND.message,
+        BAD_REQUEST,
+        usersErrors.DOCTOR_NOT_FOUND.code
+      );
+    }
+
+    if (!Array.isArray(availability)) {
+      throw new ErrorResponse(
+        usersErrors.INVALID_AVAILABILITY.message,
+        BAD_REQUEST,
+        usersErrors.INVALID_AVAILABILITY.code
+      );
+    }
+
+    doctor["availability"] = availability;
+    await doctor.save();
+    return doctor;
+  }
 }
 
 export default new UsersService();

@@ -10,15 +10,29 @@ export const CONTROLLERS = {
 
   GET_PROFILE: "getPatientProfile",
   UPDATE_PROFILE: "updatePatientProfile",
-  
+
   GET_DOCTOR: "getDoctor",
   GET_PATIENT: "getPatient",
+
+  UPDATE_AVAILABILITY: "updateAvailability",
 };
+
+export const MAX_CONSULTATION_FEE = 50;
 
 export const GENDERS = {
   MALE: "MALE",
   FEMALE: "FEMALE",
 };
+
+export const DAYS_OF_WEEK = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
 
 export const NO_ADDRESS = "No Address Provided";
 
@@ -26,6 +40,11 @@ export const usersErrors = Object.freeze({
   PATIENT_NOT_FOUND: {
     code: 101,
     message: "Patient not found",
+  },
+
+  LICENSE_NUMBER_EXISTS: {
+    code: 100,
+    message: "License number already exists",
   },
 
   DOCTOR_NOT_FOUND: {
@@ -48,5 +67,10 @@ export const usersErrors = Object.freeze({
   USER_NOT_FOUND: {
     code: 106,
     message: "User not found",
+  },
+
+  INVALID_AVAILABILITY: {
+    code: 107,
+    message: "Invalid availability data",
   },
 });

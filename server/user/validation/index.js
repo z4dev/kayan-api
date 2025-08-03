@@ -1,7 +1,93 @@
 import Joi from "joi";
 import { USER_ROLES } from "../../../common/helpers/constant.js";
-import { CONTROLLERS, GENDERS, NO_ADDRESS } from "../helpers/constant.js";
+import {
+  CONTROLLERS,
+  DAYS_OF_WEEK,
+  GENDERS,
+  MAX_CONSULTATION_FEE,
+  NO_ADDRESS,
+} from "../helpers/constant.js";
 
+const availabilitySchema = Joi.array()
+  .items(
+    Joi.object({
+      dayOfWeek: Joi.string()
+        .valid(...DAYS_OF_WEEK)
+        .required(),
+      startTime: Joi.string()
+        .pattern(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/)
+        .required(),
+      endTime: Joi.string()
+        .pattern(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/)
+        .required(),
+    }).required()
+  )
+  .min(1)
+  .required()
+  .custom((value, helpers) => {
+    const seenDays = new Set();
+
+    for (const item of value) {
+      if (seenDays.has(item.dayOfWeek)) {
+        return helpers.error("any.invalid", {
+          message: `Duplicate dayOfWeek: ${item.dayOfWeek}`,
+        });
+      }
+      seenDays.add(item.dayOfWeek);
+
+      const [startHour, startMin] = item.startTime.split(":").map(Number);
+      const [endHour, endMin] = item.endTime.split(":").map(Number);
+
+      const startTotal = startHour * 60 + startMin;
+      const endTotal = endHour * 60 + endMin;
+
+      if (startTotal >= endTotal) {
+        return helpers.error("any.invalid", {
+          message: `startTime (${item.startTime}) must be earlier than endTime (${item.endTime}) for ${item.dayOfWeek}`,
+        });
+      }
+    }
+
+    return value;
+  });
+
+const availabilityItemSchemaForUpdate = Joi.object({
+  dayOfWeek: Joi.string()
+    .valid(...DAYS_OF_WEEK)
+    .optional(),
+  startTime: Joi.string()
+    .pattern(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/)
+    .optional(),
+  endTime: Joi.string()
+    .pattern(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/)
+    .optional(),
+}).or("dayOfWeek", "startTime", "endTime");
+
+export const availabilitySchemaWhenUpdate = Joi.array()
+  .items(availabilityItemSchemaForUpdate.required())
+  .custom((value, helpers) => {
+    if (!Array.isArray(value)) return value;
+
+    const seenDays = new Set();
+
+    for (let i = 0; i < value.length; i++) {
+      const item = value[i];
+      const { dayOfWeek, startTime, endTime } = item;
+
+      // Check for duplicate days
+      if (dayOfWeek) {
+        if (seenDays.has(dayOfWeek)) {
+          return helpers.message({
+            custom: `availability[${i}].dayOfWeek: Duplicate dayOfWeek "${dayOfWeek}" is not allowed.`,
+          });
+        }
+        seenDays.add(dayOfWeek);
+      }
+    }
+
+    return value;
+  })
+  .optional();
 const baseUserFields = {
   firstName: Joi.string().required(),
   lastName: Joi.string().required(),
@@ -47,14 +133,23 @@ const patientFields = {
   gender: Joi.string()
     .valid(...Object.keys(GENDERS))
     .optional(),
+
   dateOfBirth: Joi.date().iso().optional(),
   insuranceNumber: Joi.string().optional(),
 };
 
 const doctorFields = {
   specialty: Joi.string().required(),
-  clinicAddress: Joi.string().required().default(NO_ADDRESS),
+  clinicAddress: Joi.string().default(NO_ADDRESS),
   licenseNumber: Joi.string().required(),
+  consultationFee: Joi.number()
+    .min(0)
+    .max(MAX_CONSULTATION_FEE)
+    .default(0)
+    .required(),
+  aboutDoctor: Joi.string().default("").required(),
+
+  availability: availabilitySchema,
 };
 
 // when update
@@ -70,6 +165,13 @@ const doctorFieldsWhenUpdate = {
   specialty: Joi.string().optional(),
   clinicAddress: Joi.string().optional().default(NO_ADDRESS),
   licenseNumber: Joi.string().optional(),
+  consultationFee: Joi.number()
+    .min(0)
+    .max(MAX_CONSULTATION_FEE)
+    .optional()
+    .default(0),
+  aboutDoctor: Joi.string().optional().default(""),
+  availability: availabilitySchemaWhenUpdate,
 };
 
 export default {
@@ -124,6 +226,12 @@ export default {
           then: Joi.object(doctorFieldsWhenUpdate),
         }
       ),
+  },
+
+  [CONTROLLERS.UPDATE_AVAILABILITY]: {
+    body: Joi.object({
+      availability: availabilitySchemaWhenUpdate,
+    }).required(),
   },
 
   [CONTROLLERS.LIST_USERS]: {

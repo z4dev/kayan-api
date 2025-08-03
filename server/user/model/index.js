@@ -1,5 +1,4 @@
-import User from "../schema/index.js";
-
+import UserSchema from "../schema/index.js";
 class UserModel {
   _buildProjection(base = {}) {
     return { ...base, password: 0, __v: 0 };
@@ -8,7 +7,7 @@ class UserModel {
   async find(selectors = {}, options = {}) {
     const { limit, skip, sort, projection } = options;
     console.log(limit, skip, sort);
-    return await User.find(selectors)
+    return await UserSchema.find(selectors)
       .select(this._buildProjection(projection))
       .sort(sort || "-updatedAt")
       .limit(limit)
@@ -18,9 +17,19 @@ class UserModel {
   }
 
   async findOne(selector = {}, projection = {}, populationList = []) {
-    return await User.findOne(selector)
+    return await UserSchema.findOne(selector)
       .select(projection)
       .lean()
+      .populate(populationList);
+  }
+
+  async findOneWithoutLean(
+    selector = {},
+    projection = {},
+    populationList = []
+  ) {
+    return await UserSchema.findOne(selector)
+      .select(projection)
       .populate(populationList);
   }
 
@@ -38,7 +47,7 @@ class UserModel {
 
   async update(selector = {}, updateData = {}, options = {}) {
     const { upsert = false, new: returnNew = true } = options;
-    return await User.findOneAndUpdate(
+    return await UserSchema.findOneAndUpdate(
       selector,
       { $set: updateData },
       {
@@ -52,7 +61,7 @@ class UserModel {
   }
 
   async createByRole(userType, payload) {
-    const discriminatorModel = User.discriminators?.[userType];
+    const discriminatorModel = UserSchema.discriminators?.[userType];
     if (!discriminatorModel) {
       throw new Error(`Invalid userType discriminator: ${userType}`);
     }
@@ -64,7 +73,7 @@ class UserModel {
   }
 
   async getUserByRole(id, role) {
-    const discriminator = User.discriminators?.[role];
+    const discriminator = UserSchema.discriminators?.[role];
     console.log(discriminator);
     const user = await discriminator.findById(id).lean();
     console.log(user);
@@ -74,7 +83,7 @@ class UserModel {
   }
 
   async getUserByRoleExcludePassword(id, role) {
-    const discriminator = User.discriminators?.[role];
+    const discriminator = UserSchema.discriminators?.[role];
     console.log(discriminator);
     const user = await discriminator.findById(id).lean();
     console.log(user);
@@ -84,7 +93,7 @@ class UserModel {
   }
 
   async count(selectors = {}) {
-    const result = await User.countDocuments(selectors).maxTimeMS(60000);
+    const result = await UserSchema.countDocuments(selectors).maxTimeMS(60000);
     return result;
   }
 }

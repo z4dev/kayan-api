@@ -6,6 +6,7 @@ import visitsService from "../service/visitsService.js";
 export default {
   [CONTROLLERS.CREATE_VISIT]: async (req, res, next) => {
     try {
+      
       const data = await visitsService.createVisit(req.body);
       res.status(StatusCodes.CREATED).json({ success: true, data });
     } catch (error) {

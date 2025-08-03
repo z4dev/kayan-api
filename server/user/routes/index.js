@@ -46,6 +46,13 @@ router.put(
   validateRequest(validationSchemas[CONTROLLERS.UPDATE_PROFILE]),
   Controller[CONTROLLERS.UPDATE_PROFILE]
 );
+router.patch(
+  "/doctor/availability",
+  Authenticate,
+  Authorization.Authorize(permission[CONTROLLERS.UPDATE_AVAILABILITY]),
+  validateRequest(validationSchemas[CONTROLLERS.UPDATE_AVAILABILITY]),
+  Controller[CONTROLLERS.UPDATE_AVAILABILITY]
+);
 
 router.get(
   "/doctors",
