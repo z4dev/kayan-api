@@ -93,29 +93,4 @@ router.delete(
   Controller[CONTROLLERS.REMOVE_TREATMENT]
 );
 
-
-
-// Get doctor's active visit
-router.get(
-  "/doctor/active",
-  Authenticate,
-  Controller[CONTROLLERS.GET_DOCTOR_ACTIVE_VISIT]
-);
-
-// Get patient visits
-router.get(
-  "/patient/:patientId",
-  Authenticate,
-  validateRequest(validationSchemas[CONTROLLERS.GET_PATIENT_VISITS]),
-  Controller[CONTROLLERS.GET_PATIENT_VISITS]
-);
-
-// Get doctor visits
-router.get(
-  "/doctor/:doctorId",
-  Authenticate,
-  validateRequest(validationSchemas[CONTROLLERS.GET_DOCTOR_VISITS]),
-  Controller[CONTROLLERS.GET_DOCTOR_VISITS]
-);
-
 export default router;
