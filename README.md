@@ -1,5 +1,14 @@
 # kayan-api
 
+### Schema Analysis
+
+---
+
+
+
+[View DBML Schema](https://dbdiagram.io/d/689096f1dd90d178654fd145)
+
+https://dbdiagram.io/d/689096f1dd90d178654fd145
 
 ## Project Structure
 

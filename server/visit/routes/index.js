@@ -17,6 +17,7 @@ router.get(
   Controller[CONTROLLERS.LIST_VISITS]
 );
 
+// done
 router.get(
   "/search",
   Authenticate,
@@ -91,6 +92,8 @@ router.delete(
   validateRequest(validationSchemas[CONTROLLERS.REMOVE_TREATMENT]),
   Controller[CONTROLLERS.REMOVE_TREATMENT]
 );
+
+
 
 // Get doctor's active visit
 router.get(
