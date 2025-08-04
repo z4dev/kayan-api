@@ -11,7 +11,7 @@ export default class Authorization {
     return (req, res, next) => {
       const user = req.user;
       const userRole = _.get(user, "userType", null);
-
+      console.log(userRole);
       if (!user || !userRole)
         return res.status(StatusCodes.FORBIDDEN).json({
           message: errorCodes.USER_NOT_AUTHORIZED.message,

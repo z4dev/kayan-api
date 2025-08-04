@@ -2,7 +2,6 @@ import UserSchema from "../schema/index.js";
 class UserModel {
   async find(selectors = {}, options = {}) {
     const { limit, skip, sort, projection } = options;
-    console.log(limit, skip, sort);
     return await UserSchema.find(selectors)
       .select(projection)
       .sort(sort || "-updatedAt")
@@ -17,6 +16,40 @@ class UserModel {
       .select(projection)
       .lean()
       .populate(populationList);
+  }
+
+  async findByName({
+    name,
+    userType,
+    projection = "_id",
+    limit = 10,
+    skip = 0,
+    sort = "-updatedAt",
+  }) {
+    const searchConditions = {
+      userType,
+      $or: [
+        { firstName: { $regex: name, $options: "i" } },
+        { lastName: { $regex: name, $options: "i" } },
+        {
+          $expr: {
+            $regexMatch: {
+              input: { $concat: ["$firstName", " ", "$lastName"] },
+              regex: name,
+              options: "i",
+            },
+          },
+        },
+      ],
+    };
+
+    return await UserSchema.find(searchConditions)
+      .select(projection)
+      .sort(sort)
+      .limit(limit)
+      .skip(skip)
+      .lean()
+      .maxTimeMS(60000);
   }
 
   async findOneWithoutLean(
@@ -34,11 +67,7 @@ class UserModel {
     projection = {},
     populationList = []
   ) {
-    return await this.findOne(
-      selector,
-      projection,
-      populationList
-    );
+    return await this.findOne(selector, projection, populationList);
   }
 
   async update(selector = {}, updateData = {}, options = {}) {
@@ -70,9 +99,7 @@ class UserModel {
 
   async getUserByRole(id, role) {
     const discriminator = UserSchema.discriminators?.[role];
-    console.log(discriminator);
     const user = await discriminator.findById(id).lean();
-    console.log(user);
 
     const { password, __v, ...clean } = user;
     return clean;
@@ -80,9 +107,7 @@ class UserModel {
 
   async getUserByRoleExcludePassword(id, role) {
     const discriminator = UserSchema.discriminators?.[role];
-    console.log(discriminator);
     const user = await discriminator.findById(id).lean();
-    console.log(user);
 
     const { password, __v, ...clean } = user;
     return clean;

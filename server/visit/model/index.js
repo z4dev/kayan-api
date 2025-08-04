@@ -18,6 +18,19 @@ class Visit {
       .populate(populationList);
   }
 
+  async findWithPopulation(filter = {}, options = {}, populate = []) {
+    const { limit, skip, sort, projection } = options;
+
+    return await VisitSchema.find(filter)
+      .select(projection || "-__v")
+      .populate(populate)
+      .sort(sort || "-createdAt")
+      .limit(limit || 10)
+      .skip(skip || 0)
+      .lean()
+      .maxTimeMS(60000);
+  }
+
   async updateOne(selector = {}, update = {}, options = {}) {
     options = {
       new: true,
@@ -79,9 +92,7 @@ class Visit {
 
   async getUserByRole(id, role) {
     const discriminator = VisitSchema.discriminators?.[role];
-    console.log(discriminator);
     const user = await discriminator.findById(id).lean();
-    console.log(user);
 
     const { password, __v, ...clean } = user;
     return clean;
@@ -89,9 +100,7 @@ class Visit {
 
   async getUserByRoleExcludePassword(id, role) {
     const discriminator = VisitSchema.discriminators?.[role];
-    console.log(discriminator);
     const user = await discriminator.findById(id).lean();
-    console.log(user);
 
     const { password, __v, ...clean } = user;
     return clean;

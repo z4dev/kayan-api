@@ -47,7 +47,6 @@ export default {
   [CONTROLLERS.GET_PROFILE]: async (req, res, next) => {
     try {
       const userId = _.get(req, "user._id", null);
-      console.log(userId);
       const data = await usersService.getProfile(userId);
       res.status(StatusCodes.OK).json({ success: true, data });
     } catch (error) {
@@ -70,8 +69,6 @@ export default {
   [CONTROLLERS.UPDATE_AVAILABILITY]: async (req, res, next) => {
     try {
       const userId = _.get(req, "user._id", null);
-      console.log(userId);
-      console.log(req.body);
       const data = await usersService.updateAvailability(userId, req.body);
       res.status(StatusCodes.OK).json({ success: true, data });
     } catch (error) {

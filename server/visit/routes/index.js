@@ -9,6 +9,7 @@ import validationSchemas from "../validation/index.js";
 
 const router = express.Router();
 
+// done
 router.get(
   "/",
   Authenticate,
@@ -16,27 +17,79 @@ router.get(
   Controller[CONTROLLERS.LIST_VISITS]
 );
 
+router.get(
+  "/search",
+  Authenticate,
+  Authorization.Authorize(permission[CONTROLLERS.SEARCH_VISITS]),
+  validateRequest(validationSchemas[CONTROLLERS.SEARCH_VISITS]),
+  Controller[CONTROLLERS.SEARCH_VISITS]
+);
+
+//done
+router.put(
+  "/:id/start",
+  Authenticate,
+  validateRequest(validationSchemas[CONTROLLERS.START_VISIT]),
+  Controller[CONTROLLERS.START_VISIT]
+);
+
+// done
 router.post(
   "/",
   Authenticate,
   validateRequest(validationSchemas[CONTROLLERS.CREATE_VISIT]),
   Controller[CONTROLLERS.CREATE_VISIT]
 );
-
+// done
 router.get(
   "/:id",
   Authenticate,
   validateRequest(validationSchemas[CONTROLLERS.GET_VISIT]),
   Controller[CONTROLLERS.GET_VISIT]
 );
+//done
 
-// Search visits (Finance)
-router.get(
-  "/search",
-  Authorization.Authorize(permission[CONTROLLERS.SEARCH_VISITS]),
+router.put(
+  "/:id/end",
   Authenticate,
-  validateRequest(validationSchemas[CONTROLLERS.SEARCH_VISITS]),
-  Controller[CONTROLLERS.SEARCH_VISITS]
+  validateRequest(validationSchemas[CONTROLLERS.END_VISIT]),
+  Controller[CONTROLLERS.END_VISIT]
+);
+
+//done
+
+router.put(
+  "/:id/notes",
+  Authenticate,
+  validateRequest(validationSchemas[CONTROLLERS.UPDATE_VISIT_NOTES]),
+  Controller[CONTROLLERS.UPDATE_VISIT_NOTES]
+);
+
+//done
+
+router.post(
+  "/:id/treatments",
+  Authenticate,
+  validateRequest(validationSchemas[CONTROLLERS.ADD_TREATMENT]),
+  Controller[CONTROLLERS.ADD_TREATMENT]
+);
+
+// done
+
+router.put(
+  "/:visitId/treatments/:treatmentId",
+  Authenticate,
+  validateRequest(validationSchemas[CONTROLLERS.UPDATE_TREATMENT]),
+  Controller[CONTROLLERS.UPDATE_TREATMENT]
+);
+
+// done
+
+router.delete(
+  "/:visitId/treatments/:treatmentId",
+  Authenticate,
+  validateRequest(validationSchemas[CONTROLLERS.REMOVE_TREATMENT]),
+  Controller[CONTROLLERS.REMOVE_TREATMENT]
 );
 
 // Get doctor's active visit
@@ -60,56 +113,6 @@ router.get(
   Authenticate,
   validateRequest(validationSchemas[CONTROLLERS.GET_DOCTOR_VISITS]),
   Controller[CONTROLLERS.GET_DOCTOR_VISITS]
-);
-
-router.get(
-  "/:id",
-  Authenticate,
-  validateRequest(validationSchemas[CONTROLLERS.GET_VISIT]),
-  Controller[CONTROLLERS.GET_VISIT]
-);
-
-router.put(
-  "/:id/start",
-  Authenticate,
-  validateRequest(validationSchemas[CONTROLLERS.START_VISIT]),
-  Controller[CONTROLLERS.START_VISIT]
-);
-
-router.put(
-  "/:id/end",
-  Authenticate,
-  validateRequest(validationSchemas[CONTROLLERS.END_VISIT]),
-  Controller[CONTROLLERS.END_VISIT]
-);
-
-router.put(
-  "/:id/notes",
-  Authenticate,
-  validateRequest(validationSchemas[CONTROLLERS.UPDATE_VISIT_NOTES]),
-  Controller[CONTROLLERS.UPDATE_VISIT_NOTES]
-);
-
-router.post(
-  "/:id/treatments",
-  Authenticate,
-  validateRequest(validationSchemas[CONTROLLERS.ADD_TREATMENT]),
-  Controller[CONTROLLERS.ADD_TREATMENT]
-);
-
-router.put(
-  "/:visitId/treatments/:treatmentId",
-  Authenticate,
-  validateRequest(validationSchemas[CONTROLLERS.UPDATE_TREATMENT]),
-  Controller[CONTROLLERS.UPDATE_TREATMENT]
-);
-
-// Remove treatment (Doctor)
-router.delete(
-  "/:visitId/treatments/:treatmentId",
-  Authenticate,
-  validateRequest(validationSchemas[CONTROLLERS.REMOVE_TREATMENT]),
-  Controller[CONTROLLERS.REMOVE_TREATMENT]
 );
 
 export default router;

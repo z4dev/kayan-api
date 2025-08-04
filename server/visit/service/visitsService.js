@@ -520,118 +520,67 @@ class VisitsService {
     return await this.getVisit(visitId);
   }
 
-  async searchVisits(query) {
-    const { doctorName, patientName, visitId, page = 1, limit = 10 } = query;
-    const skip = (page - 1) * limit;
+  async searchVisits(query = {}) {
+    const {
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+      doctorName,
+      patientName,
+      visitId,
+      ...filters
+    } = query;
 
-    const pipeline = [];
+    const options = getPaginationAndSortingOptions({
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    });
+    const filter = { ...filters };
 
-    // Match stage for visitId if provided
     if (visitId) {
-      pipeline.push({
-        $match: { _id: visitId },
-      });
+      filter._id = visitId;
     }
 
-    // Lookup doctor information
-    pipeline.push({
-      $lookup: {
-        from: "users",
-        localField: "doctorId",
-        foreignField: "_id",
-        as: "doctor",
-      },
-    });
-
-    // Lookup patient information
-    pipeline.push({
-      $lookup: {
-        from: "users",
-        localField: "patientId",
-        foreignField: "_id",
-        as: "patient",
-      },
-    });
-
-    // Unwind the arrays
-    pipeline.push({ $unwind: "$doctor" }, { $unwind: "$patient" });
-
-    // Match stage for names if provided
-    const matchConditions = {};
     if (doctorName) {
-      matchConditions.$or = [
-        { "doctor.firstName": { $regex: doctorName, $options: "i" } },
-        { "doctor.lastName": { $regex: doctorName, $options: "i" } },
-        {
-          $expr: {
-            $regexMatch: {
-              input: {
-                $concat: ["$doctor.firstName", " ", "$doctor.lastName"],
-              },
-              regex: doctorName,
-              options: "i",
-            },
-          },
-        },
-      ];
+      const doctors = await User.findByName({
+        name: doctorName,
+        userType: USER_ROLES.DOCTOR,
+      });
+
+      filter.doctorId = { $in: doctors.map((doc) => doc._id) };
     }
 
     if (patientName) {
-      const patientConditions = [
-        { "patient.firstName": { $regex: patientName, $options: "i" } },
-        { "patient.lastName": { $regex: patientName, $options: "i" } },
-        {
-          $expr: {
-            $regexMatch: {
-              input: {
-                $concat: ["$patient.firstName", " ", "$patient.lastName"],
-              },
-              regex: patientName,
-              options: "i",
-            },
-          },
-        },
-      ];
+      const patients = await User.findByName({
+        name: patientName,
+        userType: USER_ROLES.PATIENT,
+      });
 
-      if (matchConditions.$or) {
-        matchConditions.$and = [
-          { $or: matchConditions.$or },
-          { $or: patientConditions },
-        ];
-        delete matchConditions.$or;
-      } else {
-        matchConditions.$or = patientConditions;
-      }
+      filter.patientId = { $in: patients.map((p) => p._id) };
     }
 
-    if (Object.keys(matchConditions).length > 0) {
-      pipeline.push({ $match: matchConditions });
-    }
+    const visits = await Visit.findWithPopulation(filter, options, [
+      {
+        path: "doctorId",
+        select:
+          "firstName lastName email phoneNumber userType specialty clinicAddress",
+      },
+      {
+        path: "patientId",
+        select: "firstName lastName email phoneNumber userType",
+      },
+    ]);
 
-    // Sort by creation date
-    pipeline.push({ $sort: { createdAt: -1 } });
-
-    // Get total count
-    const countPipeline = [...pipeline, { $count: "total" }];
-    const countResult = await Visit.aggregate(countPipeline);
-    const total = countResult[0]?.total || 0;
-
-    // Add pagination
-    pipeline.push(
-      { $skip: Number.parseInt(skip) },
-      { $limit: Number.parseInt(limit) }
-    );
-
-    const visits = await Visit.aggregate(pipeline);
+    const count = await Visit.count(filter);
 
     return {
       visits,
-      pagination: {
-        page: Number.parseInt(page),
-        limit: Number.parseInt(limit),
-        total,
-        pages: Math.ceil(total / limit),
-      },
+      ...options,
+      count,
+      totalPages: Math.ceil(count / options.limit),
     };
   }
 
