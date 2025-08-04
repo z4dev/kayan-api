@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 import logger from "./common/utils/logger/index.js";
 import {
   closeMongoConnection,
@@ -6,7 +7,6 @@ import {
 } from "./config/db/index.js";
 import { port } from "./config/env/index.js";
 import app from "./server/app.js";
-dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 
 const startServer = async () => {
   process.on("warning", (warning) =>
