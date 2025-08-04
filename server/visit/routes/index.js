@@ -62,7 +62,6 @@ router.get(
   Controller[CONTROLLERS.GET_DOCTOR_VISITS]
 );
 
-// Get specific visit
 router.get(
   "/:id",
   Authenticate,
@@ -77,23 +76,20 @@ router.put(
   Controller[CONTROLLERS.START_VISIT]
 );
 
-// End visit (Doctor)
-router.patch(
+router.put(
   "/:id/end",
   Authenticate,
   validateRequest(validationSchemas[CONTROLLERS.END_VISIT]),
   Controller[CONTROLLERS.END_VISIT]
 );
 
-// Update visit notes (Doctor)
-router.patch(
+router.put(
   "/:id/notes",
   Authenticate,
   validateRequest(validationSchemas[CONTROLLERS.UPDATE_VISIT_NOTES]),
   Controller[CONTROLLERS.UPDATE_VISIT_NOTES]
 );
 
-// Add treatment (Doctor)
 router.post(
   "/:id/treatments",
   Authenticate,
@@ -101,8 +97,7 @@ router.post(
   Controller[CONTROLLERS.ADD_TREATMENT]
 );
 
-// Update treatment (Doctor)
-router.patch(
+router.put(
   "/:visitId/treatments/:treatmentId",
   Authenticate,
   validateRequest(validationSchemas[CONTROLLERS.UPDATE_TREATMENT]),

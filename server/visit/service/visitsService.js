@@ -285,7 +285,7 @@ class VisitsService {
       );
     }
 
-    await Visit.updateOne(
+    await Visit.update(
       { _id: visitId },
       {
         status: VISIT_STATUS.COMPLETED,
@@ -299,7 +299,8 @@ class VisitsService {
   // treatment management methods
 
   async addTreatment(visitId, treatmentData, doctorId) {
-    const visit = await Visit.findOne({ _id: visitId });
+    const visit = await Visit.findOneWithoutLean({ _id: visitId });
+
     if (!visit) {
       throw new ErrorResponse(
         visitsErrors.VISIT_NOT_FOUND.message,
@@ -324,20 +325,45 @@ class VisitsService {
       );
     }
 
-    const treatment = {
-      name: treatmentData.name,
-      description: treatmentData.description || "",
-      cost: treatmentData.cost,
-      createdAt: new Date(),
-    };
+    const quantity = treatmentData.quantity ?? 1;
+    const name = treatmentData.name.trim();
+    const description = (treatmentData.description ?? "").trim();
 
-    const updatedVisit = await Visit.updateOne(
-      { _id: visitId },
-      {
-        $push: { treatments: treatment },
-        $inc: { totalAmount: treatment.cost },
-      }
+    const existingTreatment = visit.treatments.find(
+      (t) => t.name === name && t.description === description
     );
+
+    if (existingTreatment) {
+      await Visit.updateOne(
+        {
+          _id: visitId,
+          "treatments.name": name,
+          "treatments.description": description,
+        },
+        {
+          $inc: {
+            "treatments.$.quantity": quantity,
+            totalAmount: treatmentData.cost * quantity,
+          },
+        }
+      );
+    } else {
+      const newTreatment = {
+        name,
+        description,
+        cost: treatmentData.cost,
+        quantity,
+        createdAt: new Date(),
+      };
+
+      await Visit.updateOne(
+        { _id: visitId },
+        {
+          $push: { treatments: newTreatment },
+          $inc: { totalAmount: newTreatment.cost * quantity },
+        }
+      );
+    }
 
     return await this.getVisit(visitId);
   }
@@ -380,9 +406,12 @@ class VisitsService {
       );
     }
 
-    const oldCost = visit.treatments[treatmentIndex].cost;
-    const newCost = treatmentData.cost || oldCost;
-    const costDifference = newCost - oldCost;
+    const oldTreatment = visit.treatments[treatmentIndex];
+    const oldTotal = oldTreatment.cost * (oldTreatment.quantity ?? 1);
+
+    const newCost = treatmentData.cost ?? oldTreatment.cost;
+    const newQuantity = treatmentData.quantity ?? oldTreatment.quantity ?? 1;
+    const newTotal = newCost * newQuantity;
 
     const updateFields = {};
     if (treatmentData.name)
@@ -392,12 +421,15 @@ class VisitsService {
         treatmentData.description;
     if (treatmentData.cost !== undefined)
       updateFields[`treatments.${treatmentIndex}.cost`] = treatmentData.cost;
+    if (treatmentData.quantity !== undefined)
+      updateFields[`treatments.${treatmentIndex}.quantity`] =
+        treatmentData.quantity;
 
     await Visit.updateOne(
       { _id: visitId },
       {
         $set: updateFields,
-        $inc: { totalAmount: costDifference },
+        $inc: { totalAmount: newTotal - oldTotal },
       }
     );
 
@@ -433,6 +465,7 @@ class VisitsService {
     const treatment = visit.treatments.find(
       (t) => t._id.toString() === treatmentId
     );
+
     if (!treatment) {
       throw new ErrorResponse(
         visitsErrors.TREATMENT_NOT_FOUND.message,
@@ -441,11 +474,13 @@ class VisitsService {
       );
     }
 
+    const totalDeduction = (treatment.cost ?? 0) * (treatment.quantity ?? 1);
+
     await Visit.updateOne(
       { _id: visitId },
       {
         $pull: { treatments: { _id: treatmentId } },
-        $inc: { totalAmount: -treatment.cost },
+        $inc: { totalAmount: -totalDeduction },
       }
     );
 
@@ -470,7 +505,17 @@ class VisitsService {
       );
     }
 
-    await Visit.updateOne({ _id: visitId }, { notes: notesData.notes });
+    if (
+      ![VISIT_STATUS.IN_PROGRESS, VISIT_STATUS.COMPLETED].includes(visit.status)
+    ) {
+      throw new ErrorResponse(
+        visitsErrors.CANNOT_EDIT_NOTES_IN_THIS_STATUS.message(visit.status),
+        BAD_REQUEST,
+        visitsErrors.CANNOT_EDIT_NOTES_IN_THIS_STATUS.code
+      );
+    }
+
+    await Visit.update({ _id: visitId }, { medicalNotes: notesData.notes });
 
     return await this.getVisit(visitId);
   }

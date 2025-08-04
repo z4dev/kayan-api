@@ -60,11 +60,12 @@ export default {
   },
 
   [CONTROLLERS.ADD_TREATMENT]: async (req, res, next) => {
+    const userId = _.get(req, "user._id", null);
     try {
       const data = await visitsService.addTreatment(
         req.params.id,
         req.body,
-        req.user.id
+        userId
       );
       res.status(StatusCodes.OK).json({ success: true, data });
     } catch (error) {
@@ -74,12 +75,14 @@ export default {
   },
 
   [CONTROLLERS.UPDATE_TREATMENT]: async (req, res, next) => {
+    const userId = _.get(req, "user._id", null);
+
     try {
       const data = await visitsService.updateTreatment(
         req.params.visitId,
         req.params.treatmentId,
         req.body,
-        req.user.id
+        userId
       );
       res.status(StatusCodes.OK).json({ success: true, data });
     } catch (error) {
@@ -89,11 +92,12 @@ export default {
   },
 
   [CONTROLLERS.REMOVE_TREATMENT]: async (req, res, next) => {
+    const userId = _.get(req, "user._id", null);
     try {
       const data = await visitsService.removeTreatment(
         req.params.visitId,
         req.params.treatmentId,
-        req.user.id
+        userId
       );
       res.status(StatusCodes.OK).json({ success: true, data });
     } catch (error) {
@@ -103,11 +107,12 @@ export default {
   },
 
   [CONTROLLERS.UPDATE_VISIT_NOTES]: async (req, res, next) => {
+    const userId = _.get(req, "user._id", null);
     try {
       const data = await visitsService.updateVisitNotes(
         req.params.id,
         req.body,
-        req.user.id
+        userId
       );
       res.status(StatusCodes.OK).json({ success: true, data });
     } catch (error) {

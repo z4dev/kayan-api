@@ -57,6 +57,8 @@ export default {
       name: Joi.string().required(),
       description: Joi.string().optional().allow(""),
       cost: Joi.number().min(0).required(),
+      quantity: Joi.number().min(1).optional().default(1),
+      createdAt: Joi.forbidden(),
     }),
   },
 
@@ -69,6 +71,7 @@ export default {
       name: Joi.string().optional(),
       description: Joi.string().optional().allow(""),
       cost: Joi.number().min(0).optional(),
+      quantity: Joi.number().integer().min(1).optional(),
     }).min(1),
   },
 

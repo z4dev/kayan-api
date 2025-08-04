@@ -64,4 +64,20 @@ export const visitsErrors = Object.freeze({
       `You cannot book a visit in the past. Current time is ${formattedNow} on ${formattedDay}.`,
     code: 310,
   },
+  VISIT_CANNOT_BE_ENDED: {
+    message: "Visit cannot be ended",
+    code: 311,
+  },
+  VISIT_NOT_IN_PROGRESS: {
+    message: "Visit is not in progress",
+    code: 312,
+  },
+  CANNOT_EDIT_NOTES_IN_THIS_STATUS: {
+    message: (status) => `You cannot edit notes in the ${status} status.`,
+    code: 313,
+  },
+  TREATMENT_NOT_FOUND: {
+    message: "Treatment not found",
+    code: 314,
+  },
 });

@@ -32,6 +32,8 @@ const visitSchema = new mongoose.Schema({
       name: { type: String, required: true },
       description: { type: String },
       cost: { type: Number, required: true },
+      quantity: { type: Number, default: 1 },
+      createdAt: { type: Date, default: Date.now },
     },
   ],
   medicalNotes: { type: String },
@@ -40,6 +42,7 @@ const visitSchema = new mongoose.Schema({
     default: 0,
   },
   startedAt: { type: Date, default: null },
+  endedAt: { type: Date, default: null },
   createdAt: { type: Date, default: Date.now },
   completedAt: { type: Date },
 });

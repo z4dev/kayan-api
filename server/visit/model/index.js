@@ -18,6 +18,16 @@ class Visit {
       .populate(populationList);
   }
 
+  async updateOne(selector = {}, update = {}, options = {}) {
+    options = {
+      new: true,
+      upsert: false,
+      runValidators: true,
+      ...options,
+    };
+    return await VisitSchema.updateOne(selector, update, options);
+  }
+
   async findOneWithoutLean(
     selector = {},
     projection = {},
