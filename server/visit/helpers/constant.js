@@ -54,4 +54,14 @@ export const visitsErrors = Object.freeze({
     message: "Doctor has an active visit",
     code: 308,
   },
+  VISIT_TIME_AND_DATE_BEFORE_NOW: {
+    message: (scheduledTime, dayOfWeek) =>
+      `You cannot start the visit before its scheduled time (${scheduledTime} on ${dayOfWeek}).`,
+    code: 309,
+  },
+  VISIT_TIME_IN_PAST: {
+    message: (formattedNow, formattedDay) =>
+      `You cannot book a visit in the past. Current time is ${formattedNow} on ${formattedDay}.`,
+    code: 310,
+  },
 });

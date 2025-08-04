@@ -45,6 +45,17 @@ class VisitsService {
     requestedStart.setHours(hT, mT, 0, 0);
     const requestedEnd = new Date(requestedStart.getTime() + 30 * 60000);
 
+    const now = new Date();
+    if (requestedStart < now) {
+      const formattedNow = now.toTimeString().slice(0, 5);
+      const formattedDay = now.toLocaleDateString("en-US", { weekday: "long" });
+      throw new ErrorResponse(
+        visitsErrors.VISIT_TIME_IN_PAST.message(formattedNow, formattedDay),
+        BAD_REQUEST,
+        visitsErrors.VISIT_TIME_IN_PAST.code
+      );
+    }
+
     const dayOfWeek = requestedStart.toLocaleDateString("en-US", {
       weekday: "long",
     });
@@ -186,7 +197,7 @@ class VisitsService {
       );
     }
 
-    if (visit.doctorId !== doctorId) {
+    if (visit.doctorId.toString() !== doctorId.toString()) {
       throw new ErrorResponse(
         visitsErrors.UNAUTHORIZED_VISIT_ACCESS.message,
         FORBIDDEN,
@@ -216,11 +227,32 @@ class VisitsService {
       );
     }
 
-    const updatedVisit = await Visit.update(
+    const [hour, minute] = visit.scheduledTime.split(":").map(Number);
+    const scheduledStart = new Date(visit.scheduledDate);
+    scheduledStart.setHours(hour, minute, 0, 0);
+
+    const now = new Date();
+
+    const dayOfWeek = scheduledStart.toLocaleDateString("en-US", {
+      weekday: "long",
+    });
+
+    if (now < scheduledStart) {
+      throw new ErrorResponse(
+        visitsErrors.VISIT_TIME_AND_DATE_BEFORE_NOW.message(
+          visit.scheduledTime,
+          dayOfWeek
+        ),
+        BAD_REQUEST,
+        visitsErrors.VISIT_TIME_AND_DATE_BEFORE_NOW.code
+      );
+    }
+
+    await Visit.update(
       { _id: visitId },
       {
         status: VISIT_STATUS.IN_PROGRESS,
-        startedAt: new Date(),
+        startedAt: now,
       }
     );
 
