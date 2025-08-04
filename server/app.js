@@ -3,7 +3,7 @@ import compression from "compression";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
-import { ErrorHandler } from "../common/middleware/errorHandler/index.js";
+import { ErrorHandler } from "../common/middleware/ErrorHandler/index.js";
 import requestLogger from "../common/middleware/requestLogger/index.js";
 import { API_BASE_PATH } from "../config/env/index.js";
 import router from "./router.js";
