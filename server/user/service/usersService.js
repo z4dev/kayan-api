@@ -200,6 +200,7 @@ class UsersService {
     return {
       doctors,
       ...options,
+      totalPages: Math.ceil(count / options["limit"]),
       count,
     };
   }
@@ -226,6 +227,7 @@ class UsersService {
     return {
       patients,
       ...options,
+      totalPages: Math.ceil(count / options["limit"]),
       count,
     };
   }

@@ -1,14 +1,10 @@
 import UserSchema from "../schema/index.js";
 class UserModel {
-  _buildProjection(base = {}) {
-    return { ...base, password: 0, __v: 0 };
-  }
-
   async find(selectors = {}, options = {}) {
     const { limit, skip, sort, projection } = options;
     console.log(limit, skip, sort);
     return await UserSchema.find(selectors)
-      .select(this._buildProjection(projection))
+      .select(projection)
       .sort(sort || "-updatedAt")
       .limit(limit)
       .skip(skip || 0)
@@ -40,7 +36,7 @@ class UserModel {
   ) {
     return await this.findOne(
       selector,
-      this._buildProjection(projection),
+      projection,
       populationList
     );
   }
@@ -56,7 +52,7 @@ class UserModel {
         runValidators: true,
       }
     )
-      .select(this._buildProjection())
+      .select(projection)
       .lean();
   }
 

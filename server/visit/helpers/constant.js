@@ -14,7 +14,7 @@ export const CONTROLLERS = {
   GET_DOCTOR_VISITS: "getDoctorVisits",
 };
 
-//TODO adding approving workflow
+//TODO adding approving workflow use Pending
 
 export const VISIT_STATUS = {
   SCHEDULED: "SCHEDULED",
@@ -41,5 +41,17 @@ export const visitsErrors = Object.freeze({
     message: (scheduledTime, dayOfWeek, busySlots) =>
       `Doctor is already booked at ${scheduledTime} on ${dayOfWeek}. Busy slots: ${busySlots.join(", ")}`,
     code: 305,
+  },
+  UNAUTHORIZED_VISIT_ACCESS: {
+    message: "Unauthorized access to visit",
+    code: 306,
+  },
+  VISIT_CANNOT_BE_STARTED: {
+    message: "Visit cannot be started",
+    code: 307,
+  },
+  DOCTOR_HAS_ACTIVE_VISIT: {
+    message: "Doctor has an active visit",
+    code: 308,
   },
 });

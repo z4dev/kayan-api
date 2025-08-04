@@ -92,8 +92,7 @@ class VisitsService {
       conflictStart.setHours(cH, cM, 0, 0);
       const conflictEnd = new Date(conflictStart.getTime() + 30 * 60000);
 
-      // Collect the actual DB times (formatted from raw values)
-      const formattedStart = conflictStart.toTimeString().slice(0, 5); // "HH:MM"
+      const formattedStart = conflictStart.toTimeString().slice(0, 5);
       const formattedEnd = conflictEnd.toTimeString().slice(0, 5);
       busySlots.push(`${formattedStart}–${formattedEnd}`);
 
@@ -159,6 +158,7 @@ class VisitsService {
     return {
       visits,
       ...options,
+      totalPages: Math.ceil(count / options["limit"]),
       count,
     };
   }
@@ -201,7 +201,6 @@ class VisitsService {
       );
     }
 
-    // Check if doctor has another active visit
     const activeVisit = await Visit.findOne({
       doctorId,
       status: VISIT_STATUS.IN_PROGRESS,
