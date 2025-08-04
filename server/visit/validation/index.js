@@ -35,6 +35,12 @@ export default {
     params: Joi.object({
       id: Joi.string().required(),
     }),
+    body: Joi.object({
+      notes: Joi.string().optional().allow(""),
+      patientId: Joi.string().forbidden(),
+      doctorId: Joi.string().forbidden(),
+      startedAt: Joi.date().iso().optional().default(new Date()),
+    }),
   },
 
   [CONTROLLERS.END_VISIT]: {

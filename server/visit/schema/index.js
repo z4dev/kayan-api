@@ -39,6 +39,7 @@ const visitSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  startedAt: { type: Date, default: null },
   createdAt: { type: Date, default: Date.now },
   completedAt: { type: Date },
 });

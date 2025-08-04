@@ -70,8 +70,7 @@ router.get(
   Controller[CONTROLLERS.GET_VISIT]
 );
 
-// Start visit (Doctor)
-router.patch(
+router.put(
   "/:id/start",
   Authenticate,
   validateRequest(validationSchemas[CONTROLLERS.START_VISIT]),

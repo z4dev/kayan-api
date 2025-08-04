@@ -177,6 +177,7 @@ class VisitsService {
 
   async startVisit(visitId, doctorId) {
     const visit = await Visit.findOne({ _id: visitId });
+
     if (!visit) {
       throw new ErrorResponse(
         visitsErrors.VISIT_NOT_FOUND.message,
@@ -215,7 +216,7 @@ class VisitsService {
       );
     }
 
-    const updatedVisit = await Visit.updateOne(
+    const updatedVisit = await Visit.update(
       { _id: visitId },
       {
         status: VISIT_STATUS.IN_PROGRESS,

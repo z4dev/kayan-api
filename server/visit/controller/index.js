@@ -39,7 +39,8 @@ export default {
 
   [CONTROLLERS.START_VISIT]: async (req, res, next) => {
     try {
-      const data = await visitsService.startVisit(req.params.id, req.user.id);
+      const userId = _.get(req, "user._id", null);
+      const data = await visitsService.startVisit(req.params.id, userId);
       res.status(StatusCodes.OK).json({ success: true, data });
     } catch (error) {
       logger.error(error);
@@ -49,7 +50,8 @@ export default {
 
   [CONTROLLERS.END_VISIT]: async (req, res, next) => {
     try {
-      const data = await visitsService.endVisit(req.params.id, req.user.id);
+      const userId = _.get(req, "user._id", null);
+      const data = await visitsService.endVisit(req.params.id, userId);
       res.status(StatusCodes.OK).json({ success: true, data });
     } catch (error) {
       logger.error(error);
