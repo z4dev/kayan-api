@@ -9,7 +9,6 @@ import validationSchemas from "../validation/index.js";
 
 const router = express.Router();
 
-// done
 router.get(
   "/",
   Authenticate,
@@ -17,7 +16,6 @@ router.get(
   Controller[CONTROLLERS.LIST_VISITS]
 );
 
-// done
 router.get(
   "/search",
   Authenticate,
@@ -26,69 +24,70 @@ router.get(
   Controller[CONTROLLERS.SEARCH_VISITS]
 );
 
-//done
 router.put(
   "/:id/start",
   Authenticate,
+  Authorization.Authorize(permission[CONTROLLERS.START_VISIT]),
   validateRequest(validationSchemas[CONTROLLERS.START_VISIT]),
   Controller[CONTROLLERS.START_VISIT]
 );
 
-// done
 router.post(
   "/",
   Authenticate,
+  Authorization.Authorize(permission[CONTROLLERS.CREATE_VISIT]),
   validateRequest(validationSchemas[CONTROLLERS.CREATE_VISIT]),
   Controller[CONTROLLERS.CREATE_VISIT]
 );
-// done
+
 router.get(
   "/:id",
   Authenticate,
+  Authorization.Authorize(permission[CONTROLLERS.GET_VISIT]),
   validateRequest(validationSchemas[CONTROLLERS.GET_VISIT]),
   Controller[CONTROLLERS.GET_VISIT]
 );
-//done
 
 router.put(
   "/:id/end",
   Authenticate,
+  Authorization.Authorize(permission[CONTROLLERS.END_VISIT]),
   validateRequest(validationSchemas[CONTROLLERS.END_VISIT]),
   Controller[CONTROLLERS.END_VISIT]
 );
 
-//done
 
 router.put(
   "/:id/notes",
   Authenticate,
+  Authorization.Authorize(permission[CONTROLLERS.UPDATE_VISIT_NOTES]),
   validateRequest(validationSchemas[CONTROLLERS.UPDATE_VISIT_NOTES]),
   Controller[CONTROLLERS.UPDATE_VISIT_NOTES]
 );
 
-//done
 
 router.post(
   "/:id/treatments",
   Authenticate,
+  Authorization.Authorize(permission[CONTROLLERS.ADD_TREATMENT]),
   validateRequest(validationSchemas[CONTROLLERS.ADD_TREATMENT]),
   Controller[CONTROLLERS.ADD_TREATMENT]
 );
 
-// done
 
 router.put(
   "/:visitId/treatments/:treatmentId",
   Authenticate,
+  Authorization.Authorize(permission[CONTROLLERS.UPDATE_TREATMENT]),
   validateRequest(validationSchemas[CONTROLLERS.UPDATE_TREATMENT]),
   Controller[CONTROLLERS.UPDATE_TREATMENT]
 );
 
-// done
 
 router.delete(
   "/:visitId/treatments/:treatmentId",
   Authenticate,
+  Authorization.Authorize(permission[CONTROLLERS.REMOVE_TREATMENT]),
   validateRequest(validationSchemas[CONTROLLERS.REMOVE_TREATMENT]),
   Controller[CONTROLLERS.REMOVE_TREATMENT]
 );

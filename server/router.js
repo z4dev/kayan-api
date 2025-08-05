@@ -4,7 +4,6 @@ import userRoutes from "./user/routes/index.js";
 import visitsRoutes from "./visit/routes/index.js";
 const router = express.Router();
 
-// User routes
 router.use("/users", userRoutes);
 router.use("/visits", visitsRoutes);
 
