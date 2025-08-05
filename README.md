@@ -4,11 +4,13 @@
 
 ---
 
-
-
 [View DBML Schema](https://dbdiagram.io/d/689096f1dd90d178654fd145)
 
 https://dbdiagram.io/d/689096f1dd90d178654fd145
+
+API folders
+
+![1754380842380](images/README/1754380842380.png)
 
 ## Project Structure
 

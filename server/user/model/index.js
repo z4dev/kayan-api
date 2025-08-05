@@ -1,7 +1,8 @@
 import UserSchema from "../schema/index.js";
 class UserModel {
   async find(selectors = {}, options = {}) {
-    const { limit, skip, sort, projection } = options;
+    const { limit, skip, sort } = options;
+    const projection = options.projection || "-__v -password";
     return await UserSchema.find(selectors)
       .select(projection)
       .sort(sort || "-updatedAt")
@@ -72,6 +73,7 @@ class UserModel {
 
   async update(selector = {}, updateData = {}, options = {}) {
     const { upsert = false, new: returnNew = true } = options;
+    const projection = options.projection || "-__v -password";
     return await UserSchema.findOneAndUpdate(
       selector,
       { $set: updateData },
